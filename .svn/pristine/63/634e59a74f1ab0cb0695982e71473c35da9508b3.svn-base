@@ -1,0 +1,390 @@
+package windowbuilder;
+
+import java.awt.*;
+
+import javax.swing.*;
+import java.awt.event.*;
+import java.util.*;
+
+import javax.swing.border.EtchedBorder;
+
+import eegdata.*;
+
+import panel.*;
+import processing.*;
+import processing.core.PApplet;
+
+public class EEG_Main{
+	
+	public static String filepath = null;
+	public static EEG_Data eegdata;
+	
+	private JFrame frame;
+	
+	private JTextField		textField; 	// 샘플링 계수 128 Sampling
+	private JTextField		txtGood; 	// 측정기 신호 강도
+	private JTextField		textField_1; // 유저 네임 (초기 화면 패널)
+	private JTextField 		textField_2; // 유저 네임 (안쪽 패널)
+	private JTextArea 		txtrEegDataLog; // 데이터 로그 남기기
+	private JScrollPane		scrollpane;
+	
+	// 각각의 패널들
+	private JPanel 			panel_1; 	// 메인 초기 화면(애니메이션 + 검은색 바탕)
+	private JPanel 			panel; 		// 왼쪽 패널
+	private JPanel 			panel_2; 	// 오른쪽 패널
+	private JPanel 			panel_3; 	// 오른쪽 -> EEG AllChannel Data In
+	private JPanel 			panel_4;	// 오른쪽 -> FFT Data
+	private JPanel 			panel_9;	// 오른쪽 -> 사용자 상태 보여주기 패널
+	
+	
+	private EEG_Panel_1 	eeg_panel;	// EEG 14채널 패널
+	private EEG_Explain		eeg_explain;
+	private EEG_FFT 		fft; 		// FFT 패널
+	
+	private State_Log 		state_log;	// 사용자 상태 보여주기 패널
+	
+	private Image brain;
+	
+	static EEG_Main window;
+	
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					window = new EEG_Main();
+					window.frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	public EEG_Main() {	
+		initialize();
+		// 왼쪽 패널
+		panel.setVisible(true);
+		
+		// 오른쪽 패널
+		panel_2.setVisible(true);
+		
+		// 메인초기화면
+		panel_1.setVisible(false);
+		
+		eeg_panel.setVisible(false);
+		fft.setVisible(false);
+		state_log.setVisible(false);
+		
+		fft.fft_not();
+	}
+
+
+	private void initialize() {
+		frame = new JFrame();
+		frame.getContentPane().setBackground(Color.LIGHT_GRAY);
+		frame.setBounds(100, 100, 1028, 725);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.getContentPane().setLayout(null);
+		frame.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e){
+				frame.dispose();
+			}
+		});
+		// 오른쪽 전체 패널
+		panel_2 = new JPanel();
+		panel_2.setBounds(289, 15, 711, 662);
+		frame.getContentPane().add(panel_2);
+		panel_2.setBackground(Color.LIGHT_GRAY);
+		panel_2.setLayout(new BorderLayout(0, 0));
+		
+		// 오른쪽 전체 패널 안에 탭 패널
+		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane.addMouseListener(new MouseAdapter() {
+			public void mousePressed(MouseEvent e){
+				if(e.getX() > 10 && e.getX() < 145 && e.getY() < 24){
+					// EEG Channel
+					txtrEegDataLog.append("-> EEG 14 Channel\n");
+					eeg_panel.setVisible(true);
+					fft.setVisible(false);
+					state_log.setVisible(false);
+					eeg_explain.setVisible(false);
+				}else if(e.getX() > 150 && e.getX() < 230 && e.getY() < 24){
+					// EEG FFT
+					txtrEegDataLog.append("-> EEG FFT Data Chart\n");
+					fft.setVisible(true);
+					eeg_panel.setVisible(false);
+					state_log.setVisible(false);
+				}else if(e.getX() > 238 && e.getX() < 370 && e.getY() < 24){
+					// EEG 3D Mapping 
+					System.out.println("EEG 3D Brain Mapping");
+					txtrEegDataLog.append("-> EEG 3D Brain Mapping\n");
+				}else if(e.getX() > 385 && e.getX() < 510 && e.getY() < 24){
+					// EEG STATE
+					txtrEegDataLog.append("-> EEG State Data\n");
+					state_log.setVisible(true);
+					eeg_panel.setVisible(false);
+					fft.setVisible(false);
+				}
+			}
+		});
+		tabbedPane.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
+		panel_2.add(tabbedPane);
+		
+		/////////////////////// 	EEG Channel Data 패널
+		panel_3 = new JPanel();
+		eeg_panel = new EEG_Panel_1();
+		
+		panel_3.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		panel_3.setBackground(Color.WHITE);
+		tabbedPane.addTab(" EEG Channel Data ", null, panel_3, null);
+		panel_3.setLayout(null);
+		
+		eeg_panel.setBackground(Color.WHITE);
+		eeg_panel.setBounds(0, 0, 700, 625);
+		eeg_panel.set_Panel(eeg_panel);
+		panel_3.add(eeg_panel);
+		eeg_panel.setLayout(null);
+		eeg_panel.setVisible(true);
+		
+		eeg_explain = new EEG_Explain();
+		eeg_explain.setBounds(12, 10, 682, 608);
+		eeg_explain.setBackground(Color.WHITE);
+		eeg_explain.set_Panel(eeg_explain);
+		panel_3.add(eeg_explain);
+		eeg_explain.setLayout(null);
+		eeg_explain.setVisible(true);
+		//////////////////////////////////////////////////////////
+		
+		/////////////////////////		FFT Data 패널
+		panel_4 = new JPanel();
+		fft = new EEG_FFT();
+		
+		panel_4.setBackground(Color.WHITE);
+		tabbedPane.addTab(" FFT Data ", null, panel_4, null);
+		panel_4.setLayout(new BorderLayout(0, 0));
+		
+		fft.set_Panel(fft);
+		panel_4.add(fft);
+		fft.setLayout(null);
+		fft.setVisible(false);
+		//////////////////////////////////////////////////////////
+		
+		// Brain 3D Mapping 패널
+		JPanel panel_5 = new JPanel();
+		panel_5.setBackground(Color.WHITE);
+		tabbedPane.addTab(" Brain 3D Mapping ", null, panel_5, null);
+		panel_5.setLayout(new BorderLayout(0, 0));
+		
+		
+		////////////////////////// 사용자 상태 및 감정 보여주기 패널
+		panel_9 = new JPanel();
+		panel_9.setBackground(Color.WHITE);
+		tabbedPane.addTab(" Show your State ", null, panel_9, null);
+		panel_9.setLayout(new BorderLayout(0, 0));
+		
+		state_log = new State_Log();
+		state_log.set_Panel(state_log);
+		panel_9.add(state_log);
+		state_log.setLayout(null);
+		state_log.setVisible(true);
+		////////////////////////////////////////////////////////////
+		
+		// 왼쪽 상태창 패널
+		panel = new JPanel();
+		panel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		panel.setBackground(Color.WHITE);
+		panel.setBounds(12, 15, 261, 662);
+		frame.getContentPane().add(panel);
+		panel.setLayout(null);
+		
+		processing.core.PApplet circle = new Circle();
+		circle.setBounds(12, 10, 237, 268);
+		panel.add(circle);
+		circle.setBackground(Color.WHITE);
+		circle.init();
+		circle.setVisible(true);
+		
+		//////////////////////////////////////////// 데이터 읽어오기!!
+		
+		JButton btnNewButton = new JButton("Load Data");
+		btnNewButton.addMouseListener(new MouseAdapter(){
+			public void mouseClicked(MouseEvent e){
+				System.out.println("Load Data");
+				FileDialog dialog = new FileDialog(frame);
+				dialog.setSize(300, 200);
+				dialog.setVisible(true);
+				
+				if(dialog.getDirectory() != null){
+					StringTokenizer str = new StringTokenizer(dialog.getFile(), ".");
+					ArrayList<String> list = new ArrayList<String>();
+					while(str.hasMoreTokens()){
+						list.add(str.nextToken());
+					}
+					int last = list.size() - 1;
+					if(list.get(last).equals("eeg")){
+						String path = dialog.getDirectory() + dialog.getFile();
+						txtrEegDataLog.append(path + "\n");
+						eegdata = new EEG_Data(dialog.getDirectory() + dialog.getFile());
+						eeg_panel.set_data(eegdata.getDate_all());
+						fft.fft_on();
+					}else{
+						final Dialog dialog_confirm = new Dialog(frame, "Confirm");
+						dialog_confirm.setLayout(new BorderLayout(0, 0));
+						dialog_confirm.setBackground(Color.WHITE);
+						dialog_confirm.add(new Label("Check your File, Please Select \".eeg\" File!!", Label.CENTER));
+						txtrEegDataLog.append("Check your File, Please Select \".eeg\" File!!\n");
+						dialog_confirm.setSize(400, 100);
+						dialog_confirm.setLocation(100, 100);
+						dialog_confirm.setVisible(true);
+						dialog_confirm.addWindowListener(new WindowAdapter() {
+							public void windowClosing(WindowEvent e){
+								dialog_confirm.dispose();
+							}
+						});
+					}
+				}
+			}
+		});
+		btnNewButton.setBounds(12, 610, 115, 42);
+		panel.add(btnNewButton);
+		
+		//////////////////////////////////////////// Data load stop
+		JButton btnstop = new JButton("Stop");
+		btnstop.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e){
+				eegdata = null;
+				eeg_panel.set_data(null);
+				txtrEegDataLog.append("Data loading Stop..\n");
+				fft.fft_not();
+				eeg_panel.check_set_off();
+			}
+		});
+		btnstop.setBounds(133, 610, 115, 42);
+		panel.add(btnstop);
+		
+		JButton btnSavingData = new JButton("Save Data");
+		btnSavingData.setBounds(12, 558, 237, 42);
+		panel.add(btnSavingData);
+		
+		///////////// - 데이터 로그 남기기 패널
+		JPanel panel_7 = new JPanel();
+		panel_7.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		panel_7.setBounds(12, 374, 239, 174);
+		panel.add(panel_7);
+		panel_7.setLayout(new BorderLayout(0, 0));
+		
+		txtrEegDataLog = new JTextArea();
+		txtrEegDataLog.setEditable(false);
+		txtrEegDataLog.setLineWrap(true);
+		scrollpane = new JScrollPane(txtrEegDataLog);
+		scrollpane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		
+		panel_7.add(scrollpane, BorderLayout.CENTER);
+		txtrEegDataLog.setText("EEG Data Log.....\n");
+		//////////////////////////////////////////////
+		
+		
+		/////////// - 사람 머리 채널 위치 이미지
+		JPanel panel_8 = new JPanel() {
+			public void paintComponent(Graphics g){
+				g.drawImage(brain, 0, 0, 230, 260, this);
+			}
+		};
+		panel_8.setBounds(12, 10, 237, 268);
+//		panel.add(panel_8);
+		panel_8.setLayout(new BorderLayout(0, 0));
+		/////////////////////////////////////////////////
+		
+		//////////////////////////////////////////////////////
+		JLabel lblSamplingRate = new JLabel("Sampling Rate");
+		lblSamplingRate.setBounds(12, 318, 120, 21);
+		panel.add(lblSamplingRate);
+		
+		JLabel lblEegSignalQuality = new JLabel("EEG Signal Quality");
+		lblEegSignalQuality.setBounds(12, 343, 120, 21);
+		panel.add(lblEegSignalQuality);
+		
+		textField = new JTextField();
+		textField.setText("128");
+		textField.setBounds(139, 318, 110, 21);
+		panel.add(textField);
+		textField.setColumns(10);
+		
+		txtGood = new JTextField();
+		txtGood.setText("Good");
+		txtGood.setColumns(10);
+		txtGood.setBounds(139, 343, 110, 21);
+		panel.add(txtGood);
+		
+		JLabel lblUserName = new JLabel("User Name");
+		lblUserName.setBounds(12, 288, 120, 21);
+		panel.add(lblUserName);
+		
+		textField_2 = new JTextField();
+		textField_2.setText("오세빈");
+		textField_2.setColumns(10);
+		textField_2.setBounds(139, 288, 110, 21);
+		panel.add(textField_2);
+		
+		panel_1 = new JPanel();
+		panel_1.setBackground(Color.BLACK);
+		panel_1.setBounds(0, 0, 1012, 687);
+		frame.getContentPane().add(panel_1);
+		panel_1.setLayout(null);
+		
+		JButton btnStart = new JButton("Start");
+		btnStart.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e){
+				txtrEegDataLog.append("-> Program Start\n");
+				panel_1.setVisible(false);
+				panel_1.removeAll();
+				panel.setVisible(true);
+				panel_2.setVisible(true);
+			}
+		});
+		btnStart.setBounds(440, 367, 159, 34);
+		panel_1.add(btnStart);
+		
+		JLabel lblEegAnalysisSystem = new JLabel("EEG Analysis System  ver 0.98 beta");
+		lblEegAnalysisSystem.setFont(new Font("맑은 고딕", Font.BOLD, 25));
+		lblEegAnalysisSystem.setHorizontalAlignment(SwingConstants.LEFT);
+		lblEegAnalysisSystem.setForeground(Color.WHITE);
+		lblEegAnalysisSystem.setBounds(410, 267, 435, 34);
+		lblEegAnalysisSystem.setOpaque(false);
+		panel_1.add(lblEegAnalysisSystem);
+		
+		textField_1 = new JTextField();
+		textField_1.setText("오세빈");
+		textField_1.setBounds(506, 324, 264, 21);
+		panel_1.add(textField_1);
+		textField_1.setColumns(10);
+		
+		JLabel lblNewLabel = new JLabel("NAME :");
+		lblNewLabel.setHorizontalAlignment(SwingConstants.LEFT);
+		lblNewLabel.setForeground(Color.WHITE);
+		lblNewLabel.setBounds(440, 324, 44, 21);
+		panel_1.add(lblNewLabel);
+		
+		JButton btnEnd = new JButton("Exit");
+		btnEnd.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				System.exit(0);
+			}
+		});
+		btnEnd.setBounds(611, 367, 159, 34);
+		panel_1.add(btnEnd);
+		
+		// 메인화면 프로세싱 패널 삽입
+		processing.core.PApplet sketch = new Neurons();
+		sketch.setBounds(30, 80, 533, 565);
+		panel_1.add(sketch);
+		sketch.setBackground(Color.BLACK);
+		sketch.init();
+	}
+	
+	@Override
+	public void finalize(){
+		
+	}
+}

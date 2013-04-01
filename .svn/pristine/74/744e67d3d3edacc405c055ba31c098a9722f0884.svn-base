@@ -1,0 +1,140 @@
+package windowbuilder;
+
+import java.awt.*;
+import java.awt.event.*;
+
+import javax.swing.*;
+
+public class WB_Relative {
+
+	private JFrame frame;
+	private JTextField textField;
+	public static JTextArea txtrDelta;
+	public static JTextArea textArea_1;
+	private Thread_REL thread_rel;
+	
+	public class Relative{
+		public double DELTA;
+		public double THETA;
+		public double ALPHA;
+		public double SMR;
+		public double BETA;
+		public double SUM;
+		
+		public Relative(){
+			this.DELTA = 0;
+			this.THETA = 0;
+			this.ALPHA = 0;
+			this.SMR = 0;
+			this.BETA = 0;
+			this.SUM = 0;
+		}
+		
+		public void reset(){
+			this.DELTA = 0;
+			this.THETA = 0;
+			this.ALPHA = 0;
+			this.SMR = 0;
+			this.BETA = 0;
+			this.SUM = 0;
+		}
+	}
+	
+	public static Relative relative;
+	public static boolean rel_true = false;
+	
+	public WB_Relative() {
+		relative = new Relative();
+		rel_true = true;
+		initialize();
+		
+		thread_rel = new Thread_REL();
+		thread_rel.setDaemon(true);
+		thread_rel.start();
+	}
+
+	private void initialize() {
+		frame = new JFrame("EEG Relative Power Analysis");
+		frame.getContentPane().setBackground(Color.WHITE);
+		frame.setBounds(100, 100, 350, 600);
+		frame.getContentPane().setLayout(null);
+		
+		JPanel panel = new JPanel();
+		panel.setBackground(Color.WHITE);
+		panel.setBounds(12, 10, 310, 49);
+		frame.getContentPane().add(panel);
+		panel.setLayout(new BorderLayout(0, 0));
+		
+		JTextArea txtrAbsolurePower = new JTextArea();
+		txtrAbsolurePower.setBackground(SystemColor.info);
+		txtrAbsolurePower.setFont(new Font("맑은 고딕", Font.PLAIN, 13));
+		txtrAbsolurePower.setEditable(false);
+		txtrAbsolurePower.setText(" Absolure Power -> Relative Power\n"
+									+ " Relative DELTA, THETA, ALPHA, SMR, BETA");
+		panel.add(txtrAbsolurePower, BorderLayout.CENTER);
+		
+		txtrDelta = new JTextArea();
+		txtrDelta.setFont(new Font("맑은 고딕", Font.PLAIN, 13));
+		txtrDelta.setText(" DELTA\t: " + relative.DELTA + "\n" +
+						  " THETA\t: " + relative.THETA + "\n" +
+						  " ALPHA\t: " + relative.ALPHA + "\n" +
+						  " SMR\t: " + relative.SMR + "\n" +
+						  " BETA\t: " + relative.BETA + "\n");
+		
+		txtrDelta.setBounds(12, 72, 310, 121);
+		frame.getContentPane().add(txtrDelta);
+		
+		JPanel panel_1 = new JPanel();
+		panel_1.setBackground(Color.WHITE);
+		panel_1.setBounds(12, 203, 310, 76);
+		frame.getContentPane().add(panel_1);
+		panel_1.setLayout(new BorderLayout(0, 0));
+		
+		JTextArea textArea = new JTextArea();
+		textArea.setText(" Band to Band Power\n DELTA, THETA, ALPHA, SMR, BETA\n"
+						 + " Attention(집중), Relaxation(이완), Vigilance(주위)");
+		textArea.setFont(new Font("맑은 고딕", Font.PLAIN, 13));
+		textArea.setEditable(false);
+		textArea.setBackground(SystemColor.info);
+		panel_1.add(textArea, BorderLayout.CENTER);
+		
+		textArea_1 = new JTextArea();
+		textArea_1.setFont(new Font("맑은 고딕", Font.PLAIN, 13));
+		textArea_1.setText(" Attention\t: 0.0\n Relaxation\t: 0.0\n Vigilance\t: 0.0");
+		textArea_1.setBounds(12, 289, 310, 121);
+		frame.getContentPane().add(textArea_1);
+		
+
+		frame.setVisible(true);
+		frame.addWindowListener(new WindowAdapter() {
+			@SuppressWarnings("deprecation")
+			public void WindowClosing(WindowEvent e){
+				frame.dispose();
+				thread_rel.stop();
+			}
+		});
+	}
+}
+
+class Thread_REL extends Thread{
+	public void run(){
+		while(true){
+			try{
+				Thread.sleep(1000);
+				double sum = WB_Relative.relative.SUM;
+				WB_Relative.txtrDelta.setText(
+						  " DELTA\t: " + (WB_Relative.relative.DELTA/sum)*100 + "\n" +
+						  " THETA\t: " + (WB_Relative.relative.THETA/sum)*100 + "\n" +
+						  " ALPHA\t: " + (WB_Relative.relative.ALPHA/sum)*100 + "\n" +
+						  " SMR\t: " + (WB_Relative.relative.SMR/sum)*100 + "\n" +
+						  " BETA\t: " + (WB_Relative.relative.BETA/sum)*100 + "\n");
+				
+				WB_Relative.textArea_1.setText(" Attention\t: "+ ((WB_Relative.relative.SMR+WB_Relative.relative.BETA)/WB_Relative.relative.THETA) + "\n " +
+												"Relaxation\t: "+ (WB_Relative.relative.ALPHA/WB_Relative.relative.BETA) + "\n " +
+												"Vigilance\t: "+ (WB_Relative.relative.BETA/sum)*100);
+			}catch(InterruptedException e){
+				e.printStackTrace();
+			}
+		}
+	}
+}

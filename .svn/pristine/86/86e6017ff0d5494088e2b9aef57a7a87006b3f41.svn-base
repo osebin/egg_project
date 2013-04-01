@@ -1,0 +1,646 @@
+package windowbuilder;
+
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.SoftBevelBorder;
+import javax.swing.border.BevelBorder;
+
+import org.jfree.chart.*;
+
+import chart.*;
+import eegdata.*;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
+import java.io.*;
+import java.util.*;
+
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
+
+public class WB_Sub_linechart {
+	private JFrame frame;
+	EEG_Data eegdata;
+	public static boolean Flag_p300 = false;
+	public static JButton buttonP300 = new JButton("ERP - P300");
+	
+	private boolean DATA_READ = false;
+	
+	public static JTextArea txtrErp = new JTextArea();
+	
+	JCheckBox AF3;
+	JCheckBox F7;
+	JCheckBox F3;
+	JCheckBox FC5;
+	JCheckBox T7;
+	JCheckBox P7;
+	JCheckBox O1;
+	JCheckBox O2;
+	JCheckBox P8;
+	JCheckBox T8; 
+	JCheckBox FC6;
+	JCheckBox F4; 
+	JCheckBox F8; 
+	JCheckBox AF4; 
+	
+	public WB_Sub_linechart() {
+		initialize();
+	}
+
+	private void initialize() {
+		frame = new JFrame();
+		frame.getContentPane().setForeground(Color.WHITE);
+		frame.getContentPane().setBackground(Color.WHITE);
+		frame.setBounds(200, 200, 1000, 750);
+
+		frame.setVisible(true);
+		frame.getContentPane().setLayout(null);
+		
+		final JLabel label = new JLabel("EEG Analysis System");
+		label.setBounds(12, 10, 960, 15);
+		label.setFont(new Font("Consolas", Font.BOLD, 14));
+		frame.getContentPane().add(label);
+		
+		///////////////////////////////////////////////////////////////////
+		// Channel 1 --->
+		final AllChannel timechart = new AllChannel();
+		JFreeChart chart = timechart.getChart();
+		ChartPanel panel_channel1 = new ChartPanel(chart);
+		panel_channel1.setBounds(176, 35, 796, 529);
+		frame.getContentPane().add(panel_channel1);
+		
+		final TimeLineChart_1 chart_single = new TimeLineChart_1();
+		JFreeChart chart2 = chart_single.getChart();
+		ChartPanel panel_single = new ChartPanel(chart2);
+		panel_single.setBounds(361, 570, 611, 132);
+		frame.getContentPane().add(panel_single);
+		
+		final TimeLine_Single chart_erp = new TimeLine_Single();
+		final JFreeChart chart3 = chart_erp.createSinglePanel();
+		ChartPanel panel_erp = new ChartPanel(chart3);		
+		panel_erp.setBounds(176, 570, 178, 132);
+		frame.getContentPane().add(panel_erp);
+		/////////////////////////////////////////////////////////////////////
+				
+		JButton btnDataOpen = new JButton("Data Open"); // Open Dialog and Data
+		btnDataOpen.setBounds(12, 35, 152, 42);
+		btnDataOpen.setBackground(Color.WHITE);
+		btnDataOpen.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0){
+				System.out.println("Data Open Click");
+				FileDialog dialog = new FileDialog(frame);
+				dialog.setSize(300, 200);
+				dialog.setVisible(true);
+				String path = label.getText();
+				if(dialog.getDirectory() != null){
+					StringTokenizer str = new StringTokenizer(dialog.getFile(), ".");
+					ArrayList<String> list = new ArrayList<String>();
+					while(str.hasMoreTokens()){
+						list.add(str.nextToken());
+					}
+					int last = list.size() - 1;
+					if(list.get(last).equals("eeg")){
+						label.setText(path + " - Path : " + dialog.getDirectory() + dialog.getFile());
+						eegdata = new EEG_Data(dialog.getDirectory() + dialog.getFile());
+					}else{
+						final Dialog dialog_confirm = new Dialog(frame, "Confirm");
+						dialog_confirm.setLayout(new BorderLayout(0, 0));
+						dialog_confirm.setBackground(Color.WHITE);
+						dialog_confirm.add(new Label("Check your File, Please Select \".eeg\" File!!", Label.CENTER));
+						dialog_confirm.setSize(400, 100);
+						dialog_confirm.setLocation(100, 100);
+						dialog_confirm.setVisible(true);
+						dialog_confirm.addWindowListener(new WindowAdapter() {
+							public void windowClosing(WindowEvent e){
+								dialog_confirm.dispose();
+							}
+						});
+					}
+				}
+			}
+		});
+		frame.getContentPane().add(btnDataOpen);
+		
+		JButton btnReadDatachart = new JButton("Read Data (Chart)");
+		btnReadDatachart.setBounds(12, 87, 152, 48);
+		btnReadDatachart.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0){
+				timechart.setData(eegdata.getDate_all());
+				DATA_READ = true;
+			}
+		});
+		btnReadDatachart.setBackground(Color.WHITE);
+		frame.getContentPane().add(btnReadDatachart);
+		
+		// Channel Check Box List - EEG
+		JCheckBox allchannel = new JCheckBox(" All Channels");
+		allchannel.setBackground(Color.WHITE);
+		allchannel.setBounds(22, 174, 115, 23);
+		allchannel.setSelected(true);
+		frame.getContentPane().add(allchannel);
+		
+		AF3 = new JCheckBox(" AF3"); // 1
+		F7 = new JCheckBox(" F7"); // 2
+		F3 = new JCheckBox(" F3"); // 3
+		FC5 = new JCheckBox(" FC5"); // 4
+		T7 = new JCheckBox(" T7"); // 5
+		P7 = new JCheckBox(" P7"); // 6
+		O1 = new JCheckBox(" O1"); // 7
+		O2 = new JCheckBox(" O2"); // 8
+		P8 = new JCheckBox(" P8"); // 9
+		T8 = new JCheckBox(" T8"); // 10
+		FC6 = new JCheckBox(" FC6"); // 11
+		F4 = new JCheckBox(" F4"); // 12
+		F8 = new JCheckBox(" F8"); // 13
+		AF4 = new JCheckBox(" AF4"); // 14
+		
+		AF3.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					if(DATA_READ == true){
+						chart_single.setData(eegdata.getData(0));
+					}else{
+						TimeLineChart_1.EEG_Channel = 1;
+					}
+					
+					F7.setSelected(false);
+					F3.setSelected(false);
+					FC5.setSelected(false);
+					T7.setSelected(false);
+					P7.setSelected(false);
+					O1.setSelected(false);
+					O2.setSelected(false);
+					P8.setSelected(false);
+					T8.setSelected(false);
+					FC6.setSelected(false);
+					F4.setSelected(false);
+					F8.setSelected(false);
+					AF4.setSelected(false);
+				}else{
+					chart_single.setData(null);
+					TimeLineChart_1.EEG_Channel = 0;
+				}
+			}
+		});
+		AF3.setBackground(Color.WHITE);
+		AF3.setBounds(22, 199, 115, 23);
+		frame.getContentPane().add(AF3);
+		
+		F7.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					if(DATA_READ == true){
+						chart_single.setData(eegdata.getData(1));
+					}else{
+						TimeLineChart_1.EEG_Channel = 2;
+					}
+					
+					AF3.setSelected(false);
+					F3.setSelected(false);
+					FC5.setSelected(false);
+					T7.setSelected(false);
+					P7.setSelected(false);
+					O1.setSelected(false);
+					O2.setSelected(false);
+					P8.setSelected(false);
+					T8.setSelected(false);
+					FC6.setSelected(false);
+					F4.setSelected(false);
+					F8.setSelected(false);
+					AF4.setSelected(false);
+				}else{
+					chart_single.setData(null);
+					TimeLineChart_1.EEG_Channel = 0;
+				}
+			}
+		});
+		F7.setBackground(Color.WHITE);
+		F7.setBounds(22, 224, 115, 23);
+		frame.getContentPane().add(F7);
+		
+		F3.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					if(DATA_READ == true){
+						chart_single.setData(eegdata.getData(2));
+					}else{
+						TimeLineChart_1.EEG_Channel = 3;
+					}
+					
+					AF3.setSelected(false);
+					F7.setSelected(false);
+					FC5.setSelected(false);
+					T7.setSelected(false);
+					P7.setSelected(false);
+					O1.setSelected(false);
+					O2.setSelected(false);
+					P8.setSelected(false);
+					T8.setSelected(false);
+					FC6.setSelected(false);
+					F4.setSelected(false);
+					F8.setSelected(false);
+					AF4.setSelected(false);
+				}else{
+					chart_single.setData(null);
+					TimeLineChart_1.EEG_Channel = 0;
+				}
+			}
+		});
+		F3.setBackground(Color.WHITE);
+		F3.setBounds(22, 249, 115, 23);
+		frame.getContentPane().add(F3);
+		
+		FC5.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					if(DATA_READ == true){
+						chart_single.setData(eegdata.getData(3));
+					}else{
+						TimeLineChart_1.EEG_Channel = 4;
+					}
+					AF3.setSelected(false);
+					F7.setSelected(false);
+					F3.setSelected(false);
+					T7.setSelected(false);
+					P7.setSelected(false);
+					O1.setSelected(false);
+					O2.setSelected(false);
+					P8.setSelected(false);
+					T8.setSelected(false);
+					FC6.setSelected(false);
+					F4.setSelected(false);
+					F8.setSelected(false);
+					AF4.setSelected(false);
+				}else{
+					chart_single.setData(null);
+					TimeLineChart_1.EEG_Channel = 0;
+				}
+			}
+		});
+		FC5.setBackground(Color.WHITE);
+		FC5.setBounds(22, 274, 115, 23);
+		frame.getContentPane().add(FC5);
+		
+		T7.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					if(DATA_READ == true){
+						chart_single.setData(eegdata.getData(4));
+					}else{
+						TimeLineChart_1.EEG_Channel = 5;
+					}
+					AF3.setSelected(false);
+					F7.setSelected(false);
+					F3.setSelected(false);
+					FC5.setSelected(false);
+					P7.setSelected(false);
+					O1.setSelected(false);
+					O2.setSelected(false);
+					P8.setSelected(false);
+					T8.setSelected(false);
+					FC6.setSelected(false);
+					F4.setSelected(false);
+					F8.setSelected(false);
+					AF4.setSelected(false);
+				}else{
+					chart_single.setData(null);
+					TimeLineChart_1.EEG_Channel = 0;
+				}
+			}
+		});
+		T7.setBackground(Color.WHITE);
+		T7.setBounds(22, 299, 115, 23);
+		frame.getContentPane().add(T7);
+		
+		P7.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					if(DATA_READ == true){
+						chart_single.setData(eegdata.getData(5));
+					}else{
+						TimeLineChart_1.EEG_Channel = 6;
+					}
+					
+					AF3.setSelected(false);
+					F7.setSelected(false);
+					F3.setSelected(false);
+					FC5.setSelected(false);
+					T7.setSelected(false);
+					O1.setSelected(false);
+					O2.setSelected(false);
+					P8.setSelected(false);
+					T8.setSelected(false);
+					FC6.setSelected(false);
+					F4.setSelected(false);
+					F8.setSelected(false);
+					AF4.setSelected(false);
+				}else{
+					chart_single.setData(null);
+					TimeLineChart_1.EEG_Channel = 0;
+				}
+			}
+		});
+		P7.setBackground(Color.WHITE);
+		P7.setBounds(22, 324, 115, 23);
+		frame.getContentPane().add(P7);
+		
+		O1.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					if(DATA_READ == true){
+						chart_single.setData(eegdata.getData(6));
+					}else{
+						TimeLineChart_1.EEG_Channel = 7;
+					}
+					AF3.setSelected(false);
+					F7.setSelected(false);
+					F3.setSelected(false);
+					FC5.setSelected(false);
+					T7.setSelected(false);
+					P7.setSelected(false);
+					O2.setSelected(false);
+					P8.setSelected(false);
+					T8.setSelected(false);
+					FC6.setSelected(false);
+					F4.setSelected(false);
+					F8.setSelected(false);
+					AF4.setSelected(false);
+				}else{
+					chart_single.setData(null);
+					TimeLineChart_1.EEG_Channel = 0;
+				}
+			}
+		});
+		O1.setBackground(Color.WHITE);
+		O1.setBounds(22, 349, 115, 23);
+		frame.getContentPane().add(O1);
+		
+		O2.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					if(DATA_READ == true){
+						chart_single.setData(eegdata.getData(7));
+					}else{
+						TimeLineChart_1.EEG_Channel = 8;
+					}
+					AF3.setSelected(false);
+					F7.setSelected(false);
+					F3.setSelected(false);
+					FC5.setSelected(false);
+					T7.setSelected(false);
+					P7.setSelected(false);
+					O1.setSelected(false);
+					P8.setSelected(false);
+					T8.setSelected(false);
+					FC6.setSelected(false);
+					F4.setSelected(false);
+					F8.setSelected(false);
+					AF4.setSelected(false);
+				}else{
+					chart_single.setData(null);
+					TimeLineChart_1.EEG_Channel = 0;
+				}
+			}
+		});
+		O2.setBackground(Color.WHITE);
+		O2.setBounds(22, 374, 115, 23);
+		frame.getContentPane().add(O2);
+		
+		P8.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					if(DATA_READ == true){
+						chart_single.setData(eegdata.getData(8));
+					}else{
+						TimeLineChart_1.EEG_Channel = 9;
+					}
+					
+					AF3.setSelected(false);
+					F7.setSelected(false);
+					F3.setSelected(false);
+					FC5.setSelected(false);
+					T7.setSelected(false);
+					P7.setSelected(false);
+					O1.setSelected(false);
+					O2.setSelected(false);
+					T8.setSelected(false);
+					FC6.setSelected(false);
+					F4.setSelected(false);
+					F8.setSelected(false);
+					AF4.setSelected(false);
+				}else{
+					chart_single.setData(null);
+					TimeLineChart_1.EEG_Channel = 0;
+				}
+			}
+		});
+		P8.setBackground(Color.WHITE);
+		P8.setBounds(22, 399, 115, 23);
+		frame.getContentPane().add(P8);
+		
+		T8.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					if(DATA_READ == true){
+						chart_single.setData(eegdata.getData(9));
+					}else{
+						TimeLineChart_1.EEG_Channel = 10;
+					}
+					AF3.setSelected(false);
+					F7.setSelected(false);
+					F3.setSelected(false);
+					FC5.setSelected(false);
+					T7.setSelected(false);
+					P7.setSelected(false);
+					O1.setSelected(false);
+					O2.setSelected(false);
+					P8.setSelected(false);
+					FC6.setSelected(false);
+					F4.setSelected(false);
+					F8.setSelected(false);
+					AF4.setSelected(false);
+				}else{
+					chart_single.setData(null);
+					TimeLineChart_1.EEG_Channel = 0;
+				}
+			}
+		});
+		T8.setBackground(Color.WHITE);
+		T8.setBounds(22, 424, 115, 23);
+		frame.getContentPane().add(T8);
+		
+		FC6.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					if(DATA_READ == true){
+						chart_single.setData(eegdata.getData(10));
+					}else{
+						TimeLineChart_1.EEG_Channel = 11;
+					}
+					AF3.setSelected(false);
+					F7.setSelected(false);
+					F3.setSelected(false);
+					FC5.setSelected(false);
+					T7.setSelected(false);
+					P7.setSelected(false);
+					O1.setSelected(false);
+					O2.setSelected(false);
+					P8.setSelected(false);
+					T8.setSelected(false);
+					F4.setSelected(false);
+					F8.setSelected(false);
+					AF4.setSelected(false);
+				}else{
+					chart_single.setData(null);
+					TimeLineChart_1.EEG_Channel = 0;
+				}
+			}
+		});
+		FC6.setBackground(Color.WHITE);
+		FC6.setBounds(22, 449, 115, 23);
+		frame.getContentPane().add(FC6);
+		
+		F4.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					if(DATA_READ == true){
+						chart_single.setData(eegdata.getData(11));
+					}else{
+						TimeLineChart_1.EEG_Channel = 12;
+					}
+					AF3.setSelected(false);
+					F7.setSelected(false);
+					F3.setSelected(false);
+					FC5.setSelected(false);
+					T7.setSelected(false);
+					P7.setSelected(false);
+					O1.setSelected(false);
+					O2.setSelected(false);
+					P8.setSelected(false);
+					T8.setSelected(false);
+					FC6.setSelected(false);
+					F8.setSelected(false);
+					AF4.setSelected(false);
+				}else{
+					chart_single.setData(null);
+					TimeLineChart_1.EEG_Channel = 0;
+				}
+			}
+		});
+		F4.setBackground(Color.WHITE);
+		F4.setBounds(22, 474, 115, 23);
+		frame.getContentPane().add(F4);
+		
+		F8.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					if(DATA_READ == true){
+						chart_single.setData(eegdata.getData(12));
+					}else{
+						TimeLineChart_1.EEG_Channel = 13;
+					}
+					AF3.setSelected(false);
+					F7.setSelected(false);
+					F3.setSelected(false);
+					FC5.setSelected(false);
+					T7.setSelected(false);
+					P7.setSelected(false);
+					O1.setSelected(false);
+					O2.setSelected(false);
+					P8.setSelected(false);
+					T8.setSelected(false);
+					FC6.setSelected(false);
+					F4.setSelected(false);
+					AF4.setSelected(false);
+				}else{
+					chart_single.setData(null);
+					TimeLineChart_1.EEG_Channel = 0;
+				}
+			}
+		});
+		F8.setBackground(Color.WHITE);
+		F8.setBounds(22, 499, 115, 23);
+		frame.getContentPane().add(F8);
+		
+		AF4.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					if(DATA_READ == true){
+						chart_single.setData(eegdata.getData(13));
+					}else{
+						TimeLineChart_1.EEG_Channel = 14;
+					}
+					AF3.setSelected(false);
+					F7.setSelected(false);
+					F3.setSelected(false);
+					FC5.setSelected(false);
+					T7.setSelected(false);
+					P7.setSelected(false);
+					O1.setSelected(false);
+					O2.setSelected(false);
+					P8.setSelected(false);
+					T8.setSelected(false);
+					FC6.setSelected(false);
+					F4.setSelected(false);
+					F8.setSelected(false);
+				}else{
+					chart_single.setData(null);
+					TimeLineChart_1.EEG_Channel = 0;
+				}
+			}
+		});
+		AF4.setBackground(Color.WHITE);
+		AF4.setBounds(22, 524, 115, 23);
+		frame.getContentPane().add(AF4);
+		
+		JLabel datalabel = new JLabel("EEG Data");
+		datalabel.setFont(new Font("굴림", Font.PLAIN, 14));
+		datalabel.setHorizontalAlignment(SwingConstants.CENTER);
+		datalabel.setBounds(12, 145, 152, 23);
+		frame.getContentPane().add(datalabel);
+		
+		
+		buttonP300.setBackground(Color.WHITE);
+		buttonP300.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0){
+				TimeLine_Single.ERP_Click = true;
+				buttonP300.setText("Processing...");
+			}
+		});
+		buttonP300.setBounds(12, 570, 152, 31);
+		frame.getContentPane().add(buttonP300);
+		
+		txtrErp.setEditable(false);
+		txtrErp.setText("ERP - P300 DATA");
+		txtrErp.setBounds(22, 611, 142, 91);
+		frame.getContentPane().add(txtrErp);
+		
+		frame.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e){
+				chart_single.Timer_Stop();
+				timechart.Timer_Stop();
+				chart_erp.Timer_Stop();
+				TimeLineChart_1.EEG_Channel = 0;
+				frame.dispose();
+			}
+		});
+	}
+}

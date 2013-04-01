@@ -1,0 +1,398 @@
+package windowbuilder;
+
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextPane;
+
+import EEGLog.*;
+
+public class WB_Main {
+
+	private JFrame frame;
+	private Image brain_head;
+	public EEGLog eeglog;
+	
+	// private Image brain_boo;
+
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					WB_Main window = new WB_Main();
+					window.frame.setVisible(true);
+					System.out.println("Main Frame Start....");
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	public WB_Main() {
+		initialize();
+	}
+
+	Image img;
+
+	private void initialize() {
+		img = Toolkit.getDefaultToolkit().getImage("brain.jpg");
+		brain_head = Toolkit.getDefaultToolkit().getImage("brain_head.png");
+		// brain_boo = Toolkit.getDefaultToolkit().getImage("brain_boo1.jpg");
+
+		frame = new JFrame("EEG Analysis System");
+		frame.setResizable(false);
+		frame.setBackground(Color.WHITE);
+		frame.getContentPane().setBackground(Color.WHITE);
+		frame.getContentPane().setForeground(Color.WHITE);
+		frame.setBounds(100, 50, 822, 737);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.getContentPane().setLayout(null);
+
+
+		//Contact us(오세빈, 박은성, 백승훈)EEG
+		JButton btn_contact = new JButton("Contact us");
+		btn_contact.setBackground(Color.WHITE);
+		btn_contact.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent arg0){
+				System.out.println("Contact us..!!");
+				EventQueue.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						try{
+							WB_Sub_Contact contact_page = new WB_Sub_Contact();
+						}catch(Exception e){
+							e.printStackTrace();
+						}
+					}
+				});
+			}
+		});
+		btn_contact.setBounds(620, 630, 162, 30);
+		frame.getContentPane().add(btn_contact);
+		
+		// EEG DATA COME
+		JButton btn_eeg = new JButton("EEG Hardware Start");
+		btn_eeg.setBackground(Color.WHITE);
+		btn_eeg.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent arg0){
+				System.out.println("EEG DATA COME TO ME");
+				try{
+					eeglog = new EEGLog();
+					EEGLog.EEG_CONNECT = true;
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+			}
+		});
+		btn_eeg.setBounds(330, 630, 162, 30);
+		frame.getContentPane().add(btn_eeg);
+		
+		
+		final JButton btn_eeg_stop = new JButton("EEG STOP");
+		btn_eeg_stop.setBackground(Color.WHITE);
+		btn_eeg_stop.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent arg0){
+				if(EEGLog.EEG_CONNECT == true){
+					EEGLog.EEG_CONNECT = false;
+					System.out.println("EEG DATA STOP");
+					btn_eeg_stop.setText("EEG START");
+				}else if(EEGLog.EEG_CONNECT == false){
+					EEGLog.EEG_CONNECT = true;
+					System.out.println("EEG DATA START");
+					btn_eeg_stop.setText("EEG STOP");
+				}
+				
+			}
+		});
+		btn_eeg_stop.setBounds(495, 630, 120, 30);
+		frame.getContentPane().add(btn_eeg_stop);
+		
+		// EEG TimeLine Button
+		//JButton btnNewButton = new JButton("asdfa");
+		JPanel btnNewButton = new JPanel();
+		JLabel blink=new JLabel("                   ");
+		JLabel blink2=new JLabel("                   ");
+		JLabel l=new JLabel("EEG TimeLine");
+		btnNewButton.add(blink);
+		btnNewButton.add(blink2);
+		btnNewButton.add(l);
+		
+		
+		btnNewButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				System.out.println("Time Line Chart Page Start!!");
+				EventQueue.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						try {
+							WB_Sub_linechart subpage = new WB_Sub_linechart();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				});
+			}
+		});
+		btnNewButton.setBounds(252, 182, 120, 100);
+		btnNewButton.setOpaque(false);
+		frame.getContentPane().add(btnNewButton);
+
+		// side button01(첫번째 버튼)
+		JLabel btn_side01 = new JLabel();
+		btn_side01.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent arg0) {
+				System.out.println("Time Line Chart Page Start!!");
+				EventQueue.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						try {
+							WB_Sub_linechart subpage = new WB_Sub_linechart();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				});
+			}
+		});
+		btn_side01.setBackground(Color.WHITE);
+		btn_side01.setBounds(372, 170, 120, 40);
+		btn_side01.setOpaque(false);
+		frame.getContentPane().add(btn_side01);
+
+		// side button02(2번째 버튼)
+		JPanel btn_side02 = new JPanel();
+		btn_side02.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent arg0) {
+				System.out.println("Time Line Chart Page Start!!");
+				EventQueue.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						try {
+							WB_Sub_linechart subpage = new WB_Sub_linechart();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				});
+			}
+		});
+		btn_side02.setBackground(Color.WHITE);
+		btn_side02.setBounds(200, 280, 80, 50);
+		btn_side02.setOpaque(false);
+		frame.getContentPane().add(btn_side02);
+
+		JTextPane txtpnAaaaaa = new JTextPane();
+		txtpnAaaaaa.setEditable(false);
+		txtpnAaaaaa.setBackground(Color.WHITE);
+		txtpnAaaaaa.setText("사전에 기록된 뇌파(EEG) 데이터를 바탕으로 시간별 'LineChart' 를 그려줍니다.");
+		txtpnAaaaaa.setBounds(26, 180, 160, 87);
+		txtpnAaaaaa.setOpaque(false);
+		frame.getContentPane().add(txtpnAaaaaa);
+
+		
+		// PowerSpectrum Button
+		/*JButton btnFftPowerspectrum = new JButton("Powerspectrum");*/
+		JPanel btnFftPowerspectrum=new JPanel();
+		
+		JLabel l1=new JLabel("Powerspectrum");
+		JLabel blink3=new JLabel("              ");
+		btnFftPowerspectrum.add(blink3);
+		btnFftPowerspectrum.add(l1);
+		
+		btnFftPowerspectrum.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				System.out.println("PowerSpectrum Chart Start - FFT");
+				EventQueue.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						try {
+							WB_Sub_PS subpage2 = new WB_Sub_PS();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				});
+			}
+		});
+		btnFftPowerspectrum.setBackground(Color.WHITE);
+		btnFftPowerspectrum.setBounds(352, 282, 130, 80);
+		btnFftPowerspectrum.setOpaque(false);
+		// panel_1.add(btnFftPowerspectrum);
+		frame.getContentPane().add(btnFftPowerspectrum);
+
+		// side button03(3번째 버튼)
+		JPanel btn_side03 = new JPanel();
+		btn_side03.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent arg0) {
+				System.out.println("Time Line Chart Page Start!!");
+				EventQueue.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						try {
+							WB_Sub_PS subpage2 = new WB_Sub_PS();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				});
+			}
+		});
+		btn_side03.setBackground(Color.WHITE);
+		btn_side03.setBounds(440, 230, 130, 60);
+		btn_side03.setOpaque(false);
+		frame.getContentPane().add(btn_side03);
+
+		// side button04(4번째 버튼)
+		JPanel btn_side04 = new JPanel();
+		btn_side04.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent arg0) {
+				System.out.println("Time Line Chart Page Start!!");
+				EventQueue.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						try {
+							WB_Sub_PS subpage2 = new WB_Sub_PS();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				});
+			}
+		});
+		btn_side04.setBackground(Color.WHITE);
+		btn_side04.setBounds(260, 350, 130, 60);
+		btn_side04.setOpaque(false);
+		frame.getContentPane().add(btn_side04);
+
+		JTextPane textPane = new JTextPane();
+		textPane.setEditable(false);
+		textPane.setText("사전에 기록된 뇌파(EEG) 데이터를 바탕으로 FFT 를 거친 후 'PowerSpectrum' 을 그려줍니다.");
+		textPane.setBackground(Color.WHITE);
+		textPane.setBounds(634, 100, 160, 87);
+		textPane.setOpaque(false);
+		frame.getContentPane().add(textPane);
+
+
+		// Topography Button
+		//JButton button_1 = new JButton("Topography");
+		JPanel button_1 = new JPanel();
+		
+		JLabel l2=new JLabel("Topograhy");
+		JLabel blink4=new JLabel("                        ");
+		button_1.add(blink4);
+		button_1.add(l2);
+		
+		button_1.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				System.out.println("PowerSpectrum - Topography..");
+				EventQueue.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						try {
+//							WB_Sub_Topo subpage3 = new WB_Sub_Topo();
+							WB_Sub_Topo2 subpage3 = new WB_Sub_Topo2();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				});
+			}
+		});
+		button_1.setBackground(Color.WHITE);
+		button_1.setBounds(452, 362, 120, 100);
+		button_1.setOpaque(false);
+		frame.getContentPane().add(button_1);
+
+		// side button05(5번째 버튼)
+		JPanel btn_side05 = new JPanel();
+		btn_side05.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent arg0) {
+				System.out.println("Time Line Chart Page Start!!");
+				EventQueue.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						try {
+//							WB_Sub_Topo subpage3 = new WB_Sub_Topo();
+							WB_Sub_Topo2 subpage3 = new WB_Sub_Topo2();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				});
+			}
+		});
+		btn_side05.setBackground(Color.WHITE);
+		btn_side05.setBounds(350, 410, 130, 60);
+		btn_side05.setOpaque(false);
+		frame.getContentPane().add(btn_side05);
+
+		// side button06(6번째 버튼)
+		JPanel btn_side06 = new JPanel();
+		btn_side06.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent arg0) {
+				System.out.println("Time Line Chart Page Start!!");
+				EventQueue.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						try {
+//							WB_Sub_Topo subpage3 = new WB_Sub_Topo();
+							WB_Sub_Topo2 subpage3 = new WB_Sub_Topo2();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				});
+			}
+		});
+		btn_side06.setBackground(Color.WHITE);
+		btn_side06.setBounds(530, 310, 100, 60);
+		btn_side06.setOpaque(false);
+		frame.getContentPane().add(btn_side06);
+
+		JTextPane textPane_1 = new JTextPane();
+		// textPane_1.setOpaque(false);
+		textPane_1.setEditable(false);
+		textPane_1.setText("FFT 를 거친 데이터를 채널별로 분류하여 머리(3D)에 사상시켜 시각화 합니다.");
+		textPane_1.setBackground(Color.WHITE);
+		textPane_1.setBounds(690, 450, 104, 109);
+		textPane_1.setOpaque(false);
+		// panel_2.add(textPane_1);
+		frame.getContentPane().add(textPane_1);
+
+		// 큰제목
+		JLabel lblNewLabel = new JLabel("EEG Analysis System");
+		lblNewLabel.setForeground(Color.BLACK);
+		lblNewLabel.setFont(new Font("Consolas", Font.BOLD, 14));
+		lblNewLabel.setBounds(12, 10, 204, 15);
+		frame.getContentPane().add(lblNewLabel);
+
+		// 작은 제목
+		JTextPane textPane_2 = new JTextPane();
+		// textPane_2.setOpaque(false);
+		textPane_2.setForeground(Color.BLACK);
+		textPane_2.setText("뇌파 분석을 위한 툴입니다. 기록된 뇌파 또는 뇌파 장비로부터 실시간으로 데이터를 받아올 수 있습니다.");
+		textPane_2.setEditable(false);
+		textPane_2.setBackground(Color.WHITE);
+		textPane_2.setBounds(12, 35, 496, 43);
+		frame.getContentPane().add(textPane_2);
+
+		JPanel panel_3 = new JPanel() {
+			public void paintComponent(Graphics g) {				
+				g.drawImage(brain_head, 50, 50, 700, 600, this);
+			}
+		};
+		panel_3.setBackground(Color.WHITE);
+		panel_3.setBounds(0, 0, 806, 700);
+		frame.getContentPane().add(panel_3);	
+	
+	}
+}

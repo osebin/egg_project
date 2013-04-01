@@ -1,0 +1,304 @@
+package windowbuilder;
+
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
+
+import javax.media.opengl.*;
+import javax.swing.*;
+
+import org.jfree.chart.*;
+
+import chart.*;
+import fft.*;
+
+import javax.swing.border.EtchedBorder;
+
+import jogl_topo.*;
+
+public class WB_Sub_Topo {
+	private JFrame frame;
+	static FFT_Topo topo;
+	boolean data_flag = false;
+	static JTextArea txtrChannelData;
+
+	static int EEG = 0;
+	static DATA_process process;
+	
+	private Image color_img;
+	
+	public WB_Sub_Topo() {
+		initialize();
+		if(WB_Sub_PS.topo_path != null){
+			topo = new FFT_Topo(WB_Sub_PS.topo_path);
+			data_flag = true;
+		}
+		
+		color_img = Toolkit.getDefaultToolkit().getImage("color_img.png");
+		
+		process = new DATA_process();
+		process.setDaemon(true);
+		process.start();
+	} // 생성자
+	
+	private void initialize() {
+		frame = new JFrame("EEG Analysis System - Topology");
+		frame.getContentPane().setBackground(Color.WHITE);
+		frame.getContentPane().setLayout(null);
+		frame.setBounds(200, 200, 602, 750);	
+		frame.setVisible(true);
+		frame.addWindowListener(new WindowAdapter() {
+			@SuppressWarnings("deprecation")
+			public void windowClosing(WindowEvent e){
+				EEG = 0;
+				process.stop();
+				frame.dispose();
+			}
+		});
+		
+		JLabel lblEegAnalysisSystem = new JLabel("EEG Analysis System - Topology");
+		lblEegAnalysisSystem.setFont(new Font("Consolas", Font.BOLD, 14));
+		lblEegAnalysisSystem.setBounds(12, 10, 960, 15);
+		frame.getContentPane().add(lblEegAnalysisSystem);
+		
+		GLCapabilities cap = JOGL_Topo.createGLCapabilities();
+		JOGL_Topo canvas = new JOGL_Topo(cap, 536, 617);
+		
+		JPanel panel = new JPanel();
+		panel.setBounds(12, 209, 520, 444);
+		panel.setLayout(new BorderLayout(0, 0));
+		panel.add(canvas);
+		panel.setVisible(true);
+		frame.getContentPane().add(panel);
+		
+		JPanel panel_2 = new JPanel();
+		panel_2.setBounds(12, 663, 562, 39);
+		frame.getContentPane().add(panel_2);
+		panel_2.setLayout(new BorderLayout(0, 0));
+		
+		GLCapabilities cap2 = JOGL_Topo_Up.createGLCapabilities2();
+		
+		SpiderWebChart spider = new SpiderWebChart();
+		JFreeChart chart = spider.createPanel();
+		ChartPanel panel_spider = new ChartPanel(chart);
+		panel_spider.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		FlowLayout flowLayout = (FlowLayout) panel_spider.getLayout();
+		panel_spider.setBackground(Color.WHITE);
+		panel_spider.setBounds(292, 10, 282, 189);
+		frame.getContentPane().add(panel_spider);
+		
+		JCheckBox chckbxBeta = new JCheckBox("  BETA");
+		chckbxBeta.addItemListener(new ItemListener(){
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				// TODO Auto-generated method stub
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					EEG = 5;
+				}else{
+					EEG = 0;
+				}
+			}
+		});
+		chckbxBeta.setBackground(Color.WHITE);
+		chckbxBeta.setBounds(12, 150, 83, 23);
+		frame.getContentPane().add(chckbxBeta);
+		
+		JCheckBox chckbxSmr = new JCheckBox("  SMR");
+		chckbxSmr.addItemListener(new ItemListener(){
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				// TODO Auto-generated method stub
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					EEG = 4;
+				}else{
+					EEG = 0;
+				}
+			}
+		});
+		chckbxSmr.setBackground(Color.WHITE);
+		chckbxSmr.setBounds(12, 120, 69, 23);
+		frame.getContentPane().add(chckbxSmr);
+		
+		JCheckBox chckbxAlpha = new JCheckBox("  ALPHA");
+		chckbxAlpha.addItemListener(new ItemListener(){
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				// TODO Auto-generated method stub
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					EEG = 3;
+				}else{
+					EEG = 0;
+				}
+			}
+		});
+		chckbxAlpha.setBackground(Color.WHITE);
+		chckbxAlpha.setBounds(12, 90, 74, 23);
+		frame.getContentPane().add(chckbxAlpha);
+		
+		JCheckBox chckbxTheta = new JCheckBox("  THETA");
+		chckbxTheta.addItemListener(new ItemListener(){
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				// TODO Auto-generated method stub
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					EEG = 2;
+				}else{
+					EEG = 0;
+				}
+			}
+		});
+		chckbxTheta.setBackground(Color.WHITE);
+		chckbxTheta.setBounds(12, 60, 75, 23);
+		frame.getContentPane().add(chckbxTheta);
+		
+		JCheckBox chckbxDelta = new JCheckBox("  DELTA");
+		chckbxDelta.addItemListener(new ItemListener(){
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				// TODO Auto-generated method stub
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					EEG = 1;
+				}else{
+					EEG = 0;
+				}
+			}
+		});
+		chckbxDelta.setBackground(Color.WHITE);
+		chckbxDelta.setBounds(12, 30, 75, 23);
+		frame.getContentPane().add(chckbxDelta);
+		
+		txtrChannelData = new JTextArea();
+		txtrChannelData.setText("Channel Data");
+		txtrChannelData.setText("Channel Data - AF3, F7, F3, FC5, T7, P7, O1, O2, P8, T8, FC6, F4, F8, AF4");
+		panel_2.add(txtrChannelData, BorderLayout.CENTER);
+		
+		JPanel panel_1 = new JPanel() {
+			public void paintComponent(Graphics g){
+				g.drawImage(color_img, 0, 0, 38, 444, this);
+			}
+		};
+		panel_1.setBounds(536, 209, 38, 444);
+		frame.getContentPane().add(panel_1);
+		
+	} // initialize Method End
+}
+
+class DATA_process extends Thread{
+	Topo []DATA = new Topo[14];
+	public void run(){
+		while(true){
+			try {
+				Thread.sleep(1000);
+				int EEG = WB_Sub_Topo.EEG;
+				int []Jogldata = new int[14];
+				
+				if(EEG != 0){
+					DATA = WB_Sub_Topo.topo.get_data();
+					WB_Sub_Topo.txtrChannelData.setText("");
+					
+					if(EEG == 1){
+						for(int i = 0; i < 14; i++){
+							int sum = CAL_Sum(DATA, EEG);
+							String str = WB_Sub_Topo.txtrChannelData.getText();
+							WB_Sub_Topo.txtrChannelData.setText(str +" / "+ (int)((DATA[i].DELTA/sum)*100));
+							if(i == 0 || i == 1 || i == 3){
+								Jogldata[i] = (int)((DATA[i].DELTA/sum)*100);
+							}else{
+								Jogldata[i] = (int)((DATA[i].DELTA/sum)*100) -5;
+							}
+						}
+					}else if(EEG == 2){
+						for(int i = 0; i < 14; i++){
+							int sum = CAL_Sum(DATA, EEG);
+							String str = WB_Sub_Topo.txtrChannelData.getText();
+							WB_Sub_Topo.txtrChannelData.setText(str +" / "+ (int)((DATA[i].THETA/sum)*100));
+							if(i == 4 || i == 5 || i == 6 || i == 7){
+								Jogldata[i] = (int)((DATA[i].THETA/sum)*100);
+							}else{
+								Jogldata[i] = (int)((DATA[i].THETA/sum)*100) - 5;
+							}
+						}
+					}else if(EEG == 3){
+						for(int i = 0; i < 14; i++){
+							int sum = CAL_Sum(DATA, EEG);
+							String str = WB_Sub_Topo.txtrChannelData.getText();
+							WB_Sub_Topo.txtrChannelData.setText(str +" / "+ (int)((DATA[i].ALPHA/sum)*100));
+							if(i == 8 || i == 10 || i == 11 || i == 12 || i == 13){
+								Jogldata[i] = (int)((DATA[i].ALPHA/sum)*100);
+							}else{
+								Jogldata[i] = (int)((DATA[i].ALPHA/sum)*100) - 5;
+							}
+						}
+					}else if(EEG == 4){
+						for(int i = 0; i < 14; i++){
+							int sum = CAL_Sum(DATA, EEG);
+							String str = WB_Sub_Topo.txtrChannelData.getText();
+							WB_Sub_Topo.txtrChannelData.setText(str +" / "+ (int)((DATA[i].SMR/sum)*100));
+							if(i == 0 || i == 1 || i == 12 || i == 13){
+								Jogldata[i] = (int)((DATA[i].SMR/sum)*100);
+							}else{
+								Jogldata[i] = (int)((DATA[i].SMR/sum)*100) - 5;
+							}
+						}
+					}else if(EEG == 5){
+						for(int i = 0; i < 14; i++){
+							int sum = CAL_Sum(DATA, EEG);
+							String str = WB_Sub_Topo.txtrChannelData.getText();
+							WB_Sub_Topo.txtrChannelData.setText(str +" / "+ (int)((DATA[i].BETA/sum)*100));
+							if(i == 0 || i == 1 || i == 12 || i == 13){
+								Jogldata[i] = (int)((DATA[i].BETA/sum)*100);
+							}else{
+								Jogldata[i] = (int)((DATA[i].BETA/sum)*100) - 5;
+							}
+						}
+					}
+					
+					JOGL_Topo_Gradient.channel_data = Jogldata;
+					JOGL_Topo.Color_data = Jogldata;
+					
+					
+				}
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private int CAL_Sum(Topo []Data, int EEG ){
+		Topo []data = new Topo[14];
+		data = Data;
+		int sum = 0;
+		
+		if(EEG == 1){
+			for(int i = 0; i < 14; i++){
+				sum += data[i].DELTA;
+			}
+		}else if(EEG == 2){
+			for(int i = 0; i < 14; i++){
+				sum += data[i].THETA;
+			}			
+		}else if(EEG == 3){
+			for(int i = 0; i < 14; i++){
+				sum += data[i].ALPHA;
+			}
+		}else if(EEG == 4){
+			for(int i = 0; i < 14; i++){
+				sum += data[i].SMR;
+			}
+		}else if(EEG == 5){
+			for(int i = 0; i < 14; i++){
+				sum += data[i].BETA;
+			}
+		}
+		
+		return sum;
+	}
+} // Thread Class End
+
+

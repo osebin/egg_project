@@ -1,0 +1,149 @@
+package panel;
+
+import javax.media.opengl.GLCapabilities;
+import javax.swing.*;
+
+import org.jfree.chart.*;
+
+import processing.Circle;
+import windowbuilder.EEG_Main;
+
+import chart.*;
+
+import java.awt.Color;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.util.StringTokenizer;
+import javax.swing.border.EtchedBorder;
+
+import jogl_topo.JOGL_Topo;
+import jogl_topo.JOGL_Topo_Up;
+
+import java.awt.BorderLayout;
+
+public class EEG_3D extends JPanel {
+	
+	private JPanel Panel;
+	
+	private GLCapabilities 		cap;
+	private GLCapabilities 		cap2;
+	
+	private JOGL_Topo 			canvas;
+	private JOGL_Topo_Up		canvas2;
+	
+	private JPanel 				panel;
+	private JPanel 				panel_1;
+	
+	private SpiderWebChart		spider;
+	
+	private JPanel 				text_panel;
+	private JTextArea			txtlog;
+	private JScrollPane			scroll;
+	
+	private Brain_Data			brain_thread;
+	
+	public EEG_3D() {
+		init();
+	}
+	
+	public void set_Panel(EEG_3D panel){
+		panel.add(Panel);
+	}
+	
+	private void init(){
+		Panel = new JPanel();
+		Panel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		Panel.setBackground(Color.WHITE);
+		Panel.setBounds(12, 10, 682, 677);
+		Panel.setVisible(true);
+		Panel.setLayout(null);
+		
+		panel = new JPanel();
+		panel.setBounds(12, 227, 329, 433);
+		panel.setLayout(new BorderLayout(0, 0));
+		
+		Panel.add(panel);
+		
+		panel_1 = new JPanel();
+		panel_1.setBounds(341, 227, 329, 433);
+		panel_1.setLayout(new BorderLayout(0, 0));
+		Panel.add(panel_1);
+		
+		spider = new SpiderWebChart();
+		JFreeChart chart = spider.createPanel();
+		ChartPanel panel_spider = new ChartPanel(chart);
+		panel_spider.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		panel_spider.setBackground(Color.WHITE);
+		panel_spider.setBounds(12, 10, 237, 207);
+		Panel.add(panel_spider);
+		
+		text_panel = new JPanel();
+		text_panel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		text_panel.setBounds(261, 10, 409, 207);
+		text_panel.setLayout(new BorderLayout(0,0));
+		
+		txtlog = new JTextArea();
+		txtlog.setWrapStyleWord(true);
+		txtlog.setEditable(false);
+		txtlog.setLineWrap(true);
+		scroll = new JScrollPane();
+		scroll.setViewportView(txtlog);
+		scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		scroll.setAutoscrolls(true);
+		text_panel.add(scroll, BorderLayout.CENTER);
+		Panel.add(text_panel);
+		
+		txtlog.append("EEG Data Log...\n");
+		
+		brain_thread = new Brain_Data();
+		brain_thread.setDaemon(true);
+		brain_thread.start();
+	}
+	
+	public void active(){
+		cap = JOGL_Topo.createGLCapabilities();
+		canvas = new JOGL_Topo(cap, 317, 399);
+		
+		cap2 = JOGL_Topo_Up.createGLCapabilities2();
+		canvas2 = new JOGL_Topo_Up(cap2, 329, 399);
+		
+		panel.add(canvas);
+		panel_1.add(canvas2);
+		
+		spider.dataStart();
+	}
+	
+	public void deactive(){
+		panel.removeAll();
+		panel_1.removeAll();
+		spider.dataStop();
+	}
+	
+	class Brain_Data extends Thread{
+		private double[] logdata = new double[5];
+		public void run(){
+			while(true){
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				logdata = SpiderWebChart.logdata;
+				
+				if(logdata[0] != 0.0){
+					txtlog.append("THETA : " + (int)(logdata[0]*10)
+							+ "      DELTA : " + (int)(logdata[1]*10)
+							+ "      ALPHA : " + (int)(logdata[2]*10)
+							+ "      SMR : " + (int)(logdata[3]*10)
+							+ "      BETA : " + (int)(logdata[4]*10) + "\n");
+					txtlog.setCaretPosition(txtlog.getText().length());
+					txtlog.requestFocus();
+				}
+			}
+		}
+	} 
+}

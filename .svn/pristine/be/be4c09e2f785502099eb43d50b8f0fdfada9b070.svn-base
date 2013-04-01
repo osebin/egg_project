@@ -1,0 +1,79 @@
+package panel;
+
+import javax.swing.*;
+
+import org.jfree.chart.*;
+
+import chart.*;
+import java.awt.Color;
+import java.awt.BorderLayout;
+import javax.swing.border.EtchedBorder;
+import java.awt.Font;
+
+public class State_Log extends JPanel {
+		
+	JPanel Panel;
+	BarChart_State state;
+//	panel_1.setBounds(12, 10, 682, 608);
+	
+	public State_Log() {
+		init();
+	}
+	
+	public void set_Panel(State_Log panel){
+		panel.add(Panel);
+	}
+	
+	private void init(){
+		Panel = new JPanel();
+		Panel.setBackground(Color.WHITE);
+		Panel.setBounds(12, 10, 682, 690);
+		Panel.setVisible(true);
+		Panel.setLayout(null);
+		
+		state = new BarChart_State();
+		JFreeChart state_chart = state.createDemoPanel();
+		ChartPanel state_panel = new ChartPanel(state_chart);
+		
+		state_panel.setBounds(12, 137, 658, 543);
+		state_panel.setVisible(true);
+		
+		Panel.add(state_panel);
+		
+		JPanel panel = new JPanel();
+		panel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		panel.setBounds(12, 10, 445, 117);
+		Panel.add(panel);
+		panel.setLayout(new BorderLayout(0, 0));
+		
+		JScrollPane scrollPane = new JScrollPane();
+		panel.add(scrollPane, BorderLayout.CENTER);
+		
+		JTextArea txtrUserStateLog = new JTextArea();
+		txtrUserStateLog.setFont(new Font("맑은 고딕", Font.PLAIN, 13));
+		txtrUserStateLog.setWrapStyleWord(true);
+		txtrUserStateLog.setText("Excitement-S : 0.0  Excitement-L : 0.0  \nBoredom : 0.0  Frustration : 0.0  Concentration : 0.0\n");
+		scrollPane.setViewportView(txtrUserStateLog);
+		
+		JTextArea textArea = new JTextArea();
+		textArea.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
+		textArea.setWrapStyleWord(true);
+		textArea.setBounds(469, 10, 201, 117);
+
+		textArea.append("Excitement-S :  \n");
+		textArea.append("Excitement-L :  \n");
+		textArea.append("Boredom :  \n");
+		textArea.append("Frustration :  \n");
+		textArea.append("Concentration :  \n");
+		Panel.add(textArea);
+		
+	}
+	
+	public void Timer_Start(){
+		state.Timer_Start();
+	}
+	
+	public void Timer_Stop(){
+		state.Timer_Stop();
+	}
+}

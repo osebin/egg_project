@@ -1,0 +1,42 @@
+package windowbuilder;
+
+import java.awt.*;
+import java.awt.event.*;
+
+import javax.swing.*;
+
+public class WB_Sub_Contact {
+
+	private JFrame frame;
+	
+	public WB_Sub_Contact() {
+		initialize();
+	}
+
+	private void initialize() {
+		frame = new JFrame("Contact us");
+		frame.getContentPane().setBackground(Color.WHITE);
+		frame.setBounds(100, 100, 450, 300);
+		frame.setVisible(true);
+		frame.getContentPane().setLayout(null);
+		frame.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e){
+				frame.dispose();
+			}
+		});
+		
+		String label = "EEG Analysis 는 오픈 프로젝트입니다.\n" + 
+						"문의사항이 있으시면 아래 E-mail로 보내주시면 됩니다.\n\n";
+		
+		String label2 = "Busan Samsung Software Membership\n" + 
+						"오세빈, 박은성, 백승훈\n" +
+						"osebin.ssm@gmail.com";
+		
+		JTextArea txtrEegAnalysis = new JTextArea();
+		txtrEegAnalysis.setEditable(false);
+		txtrEegAnalysis.setBackground(Color.WHITE);
+		txtrEegAnalysis.setText(label + label2);
+		txtrEegAnalysis.setBounds(12, 10, 410, 126);
+		frame.getContentPane().add(txtrEegAnalysis);
+	}
+}

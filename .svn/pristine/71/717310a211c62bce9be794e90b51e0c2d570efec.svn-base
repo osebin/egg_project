@@ -1,0 +1,226 @@
+  
+package chart;   
+   
+import java.awt.Color;   
+import java.awt.Dimension;   
+import java.awt.GradientPaint;   
+import java.awt.event.ActionEvent;   
+import java.awt.event.ActionListener;   
+import java.io.*;
+import java.util.*;
+   
+import javax.swing.JPanel;   
+import javax.swing.Timer;   
+   
+import org.jfree.chart.ChartFactory;   
+import org.jfree.chart.ChartPanel;   
+import org.jfree.chart.JFreeChart;   
+import org.jfree.chart.axis.CategoryAxis;   
+import org.jfree.chart.axis.CategoryLabelPositions;   
+import org.jfree.chart.axis.NumberAxis;   
+import org.jfree.chart.plot.CategoryPlot;   
+import org.jfree.chart.plot.PlotOrientation;   
+import org.jfree.chart.renderer.category.*;
+import org.jfree.data.category.CategoryDataset;   
+import org.jfree.data.category.DefaultCategoryDataset;   
+import org.jfree.ui.ApplicationFrame;   
+import org.jfree.ui.RefineryUtilities;   
+
+import windowbuilder.*;
+
+import fft.*;
+   
+public class BarChart_Line {
+	public static ArrayList<Double> EEG_DATA_PS = new ArrayList<Double>();
+	
+	Animator animator;
+	Thread_EEG_PS EEG_ps;
+	
+	static int N = 25;
+	public BarChart_Line() {
+		// TODO Auto-generated constructor stub
+		EEG_ps = new Thread_EEG_PS();
+		EEG_ps.setDaemon(true);
+		EEG_ps.start();
+	}
+
+	public static StringTokenizer str = null;
+	
+	public void setData(StringTokenizer str){
+		BarChart_Line.str = str;
+	}
+   
+    private static DefaultCategoryDataset createDataset() {          
+        // row keys...   
+        String series1 = "First";   
+        
+        // column keys...
+        String []category = new String[51];
+        for(int i = 1; i <= 50; i++){
+        	category[i] = i + "";
+        }   
+   
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();   
+
+        for(int i = 1; i <= 50; i++){
+        	dataset.addValue(0.0, series1, category[i]);
+        }
+        return dataset;   
+    }   
+       
+    public static JFreeChart createChart(CategoryDataset dataset) {   
+           
+        // create the chart...   
+        JFreeChart chart = ChartFactory.createBarChart(   
+            null,         // chart title   
+            null,               // domain axis label   
+            null,                  // range axis label   
+            dataset,                  // data   
+            PlotOrientation.VERTICAL, // orientation   
+            false,                     // include legend   
+            false,                     // tooltips?   
+            false                     // URLs?   
+        );   
+   
+        chart.setBackgroundPaint(Color.white);      
+        CategoryPlot plot = (CategoryPlot) chart.getPlot();   
+        plot.setBackgroundPaint(Color.WHITE);   
+        plot.setDomainGridlinePaint(Color.LIGHT_GRAY);   
+        plot.setDomainGridlinesVisible(true);   
+        plot.setRangeGridlinePaint(Color.LIGHT_GRAY);   
+   
+        // set the range axis to display integers only...   
+        NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();   
+        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+        rangeAxis.setRange(0, 200);
+        
+        // disable bar outlines...   
+        BarRenderer renderer = (BarRenderer) plot.getRenderer();   
+        renderer.setDrawBarOutline(false);
+                   
+        // set up gradient paints for series...   
+        GradientPaint gp0 = new GradientPaint(   
+            0.0f, 0.0f, Color.blue,    
+            0.0f, 0.0f, new Color(0, 0, 64)   
+        );   
+        renderer.setSeriesPaint(0, gp0);   
+        return chart;              
+    }   
+
+    public JFreeChart createDemoPanel() {   
+        DefaultCategoryDataset dataset = createDataset();   
+        JFreeChart chart = createChart(dataset);   
+        animator = new Animator(dataset);   
+  
+        return chart;   
+    }
+    
+    @SuppressWarnings("deprecation")
+	public void Timer_Stop(){
+    	animator.stop();
+    	EEG_ps.stop();
+    }
+    
+    public void Timer_Start(){
+    	animator.start();
+    }
+}   
+   
+class Animator extends Timer implements ActionListener {
+	double change = 0;
+    private DefaultCategoryDataset dataset;   
+   
+    FFT BAR_FFT = new FFT();
+	int Number = 128; // 128 bits sampling
+	Complex[] x = new Complex[Number];
+	Complex[] out_x = new Complex[Number * 8];
+	static int time = 1000;
+	
+	public static ArrayList<Double> fft_value = new ArrayList<Double>();
+	
+    Animator(DefaultCategoryDataset dataset) {
+        super(time, null);   
+        this.dataset = dataset;
+        
+        addActionListener(this);   
+    }   
+
+    public void actionPerformed(ActionEvent event) {
+        Comparable rowKey = this.dataset.getRowKey(0);
+        
+        if(BarChart_Line.str != null){
+            for (int i = 0; i < Number; i++){
+            	x[i] = new Complex(i, 0);
+            	
+            	if(BarChart_Line.str.hasMoreTokens()){
+            		x[i] = new Complex(Double.valueOf(BarChart_Line.str.nextToken()), 0);
+            	}
+            }
+            
+            int in = 0;
+            for (int i = 0; i < Number * 8; i++){ // 1024
+            	out_x[i] = x[in];
+            	if(i != 0 && i % 8 == 0){
+            		in++;
+            	}
+            }
+            
+            Complex[] y = BAR_FFT.fft(out_x);
+            fft_value = BAR_FFT.Calculator(y);
+            
+            BarChart_FFT.setData_fft(fft_value);
+            SpiderWebChart.setData_spider(fft_value);
+            
+            for(int i = 0; i < 50; i ++){
+            	change = (fft_value.get(i)) / 100;
+            	Comparable key = this.dataset.getColumnKey(i);
+            	dataset.setValue(change, rowKey, key);
+            }
+            
+        }else if(WB_Sub_PS.Channel_PS > 0 && Thread_EEG_PS.PS_DATA_OK == true){
+        	for(int i = 0; i < 50; i ++){
+            	change = (fft_value.get(i)) / 100;
+            	Comparable key = this.dataset.getColumnKey(i);
+            	dataset.setValue(change, rowKey, key);
+            }
+        }
+    }   
+}
+
+class Thread_EEG_PS extends Thread{
+	public static boolean PS_DATA_OK = false;
+	FFT BAR_FFT = new FFT();
+	int Number = 128; // 128 bits sampling
+	Complex[] x = new Complex[Number];
+	Complex[] out_x = new Complex[Number * 8];
+	
+	public void run(){
+		while(true){
+			if(BarChart_Line.EEG_DATA_PS.size() >= 128 && WB_Sub_PS.Channel_PS > 0){
+				
+				for (int i = 0; i < Number; i++){
+	            	x[i] = new Complex(i, 0);
+	            	x[i] = new Complex(BarChart_Line.EEG_DATA_PS.get(i), 0);
+	            }
+				
+				BarChart_Line.EEG_DATA_PS.clear();
+				
+				int in = 0;
+	            for (int i = 0; i < Number * 8; i++){ // 1024
+	            	out_x[i] = x[in];
+	            	if(i != 0 && i % 8 == 0){
+	            		in++;
+	            	}
+	            }
+	            
+	            Complex[] y = BAR_FFT.fft(out_x);
+	            Animator.fft_value = new ArrayList<Double>(BAR_FFT.Calculator(y));
+	            PS_DATA_OK = true;
+	            
+	            BarChart_FFT.setData_fft(Animator.fft_value);
+	            SpiderWebChart.setData_spider(Animator.fft_value);
+	            
+			}
+		}
+	}
+}

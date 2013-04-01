@@ -1,0 +1,22 @@
+package windowbuilder;
+
+import java.awt.*;
+
+import javax.swing.*;
+
+public class WB_Sub_Topo3 {
+
+	private JFrame frame;
+
+		
+	public WB_Sub_Topo3() {
+		initialize();
+	}
+
+	private void initialize() {
+		frame = new JFrame();
+		frame.setBounds(200, 200, 700, 700);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	}
+
+}

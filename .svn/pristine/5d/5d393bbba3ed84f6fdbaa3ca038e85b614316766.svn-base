@@ -1,0 +1,644 @@
+package windowbuilder;
+
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
+
+import javax.swing.*;
+import javax.swing.border.*;
+
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+
+import chart.*;
+import eegdata.*;
+
+public class WB_Sub_PS {
+	public static boolean DATA_READ_PS = false;
+	public static int Channel_PS = 0;
+	
+	private JFrame frame;
+	static String topo_path;
+	EEG_Data eegdata;
+	
+	JCheckBox checkBox;
+	JCheckBox checkBox_1; 
+	JCheckBox checkBox_2; 
+	JCheckBox checkBox_3; 
+	JCheckBox checkBox_4; 
+	JCheckBox checkBox_5; 
+	JCheckBox checkBox_6; 
+	JCheckBox checkBox_7; 
+	JCheckBox checkBox_8; 
+	JCheckBox checkBox_9; 
+	JCheckBox checkBox_10;
+	JCheckBox checkBox_11;
+	JCheckBox checkBox_12;
+	JCheckBox checkBox_13;
+	
+	public WB_Sub_PS() {
+		initialize();
+	}
+
+	private void initialize() {
+		frame = new JFrame("EEG Analysis System - Power Spectrum");
+		frame.getContentPane().setBackground(Color.WHITE);
+		frame.setBounds(200, 200, 1000, 700);
+		frame.getContentPane().setLayout(null);
+		frame.setVisible(true);
+		
+		final JLabel label = new JLabel("EEG Analysis System");
+		label.setFont(new Font("Consolas", Font.BOLD, 14));
+		label.setBounds(12, 10, 960, 15);
+		frame.getContentPane().add(label);
+		
+		final BarChart_Line chart = new BarChart_Line();
+		JFreeChart _chart = chart.createDemoPanel();
+		ChartPanel chartPanel = new ChartPanel(_chart); // PowerSpectrum
+		chartPanel.setBounds(223, 35, 199, 598);
+		frame.getContentPane().add(chartPanel);
+		
+		final BarChart_FFT chart2 = new BarChart_FFT();
+		JFreeChart _chart2 = chart2.createDemoPanel();
+		ChartPanel _panel = new ChartPanel(_chart2);
+		_panel.setBounds(434, 35, 538, 617);
+		frame.getContentPane().add(_panel);
+		
+		JButton button = new JButton("Data Open"); // Open Dialog and Data
+		button.setBackground(Color.WHITE);
+		button.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0){
+				System.out.println("Data Open Click");
+				FileDialog dialog = new FileDialog(frame);
+				dialog.setSize(300, 200);
+				dialog.setVisible(true);
+				
+				String path = label.getText();
+				if(dialog.getDirectory() != null){
+					StringTokenizer str = new StringTokenizer(dialog.getFile(), ".");
+					ArrayList<String> list = new ArrayList<String>();
+					while(str.hasMoreTokens()){
+						list.add(str.nextToken());
+					}
+					int last = list.size() - 1;
+					if(list.get(last).equals("eeg")){
+						label.setText(path + " - Path : " + dialog.getDirectory() + dialog.getFile());
+						eegdata = new EEG_Data(dialog.getDirectory() + dialog.getFile());
+						WB_Sub_PS.topo_path = dialog.getDirectory() + dialog.getFile();
+						
+						WB_Sub_PS.DATA_READ_PS = true;
+						
+					}else{
+						final Dialog dialog_confirm = new Dialog(frame, "Confirm");
+						dialog_confirm.setLayout(new BorderLayout(0, 0));
+						dialog_confirm.setBackground(Color.WHITE);
+						dialog_confirm.add(new Label("Check your File, Please Select \".eeg\" File!!", Label.CENTER));
+						dialog_confirm.setSize(400, 100);
+						dialog_confirm.setLocation(100, 100);
+						dialog_confirm.setVisible(true);
+						dialog_confirm.addWindowListener(new WindowAdapter() {
+							public void windowClosing(WindowEvent e){
+								dialog_confirm.dispose();
+							}
+						});
+					}
+				}
+			}
+		});
+		button.setBounds(12, 35, 199, 42);
+		frame.getContentPane().add(button);
+		
+		checkBox = new JCheckBox(" AF3"); // 처음 실행 시 1채널로 고정되어 있음.
+		
+		JButton button_1 = new JButton("Read Data (Chart)");
+		button_1.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0){
+				chart.setData(eegdata.getData(0)); // 체크없을 시 채널 1 입력.
+				checkBox.setSelected(true);
+			}
+		});
+		
+		button_1.setBackground(Color.WHITE);
+		button_1.setBounds(12, 87, 199, 48);
+		frame.getContentPane().add(button_1);
+		
+		checkBox_1 = new JCheckBox(" F7");
+		checkBox_2 = new JCheckBox(" F3");
+		checkBox_3 = new JCheckBox(" FC5");
+		checkBox_4 = new JCheckBox(" T7");
+		checkBox_5 = new JCheckBox(" P7");
+		checkBox_6 = new JCheckBox(" O1");
+		checkBox_7 = new JCheckBox(" O2");
+		checkBox_8 = new JCheckBox(" P8");
+		checkBox_9 = new JCheckBox(" T8");
+		checkBox_10 = new JCheckBox(" FC6");
+		checkBox_11 = new JCheckBox(" F4");
+		checkBox_12 = new JCheckBox(" F8");
+		checkBox_13 = new JCheckBox(" AF4");
+
+		checkBox.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e){
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					if(WB_Sub_PS.DATA_READ_PS == true){
+						chart.setData(eegdata.getData(0));
+					}else{
+						WB_Sub_PS.Channel_PS = 1;
+					}
+					checkBox_1.setSelected(false);
+					checkBox_2.setSelected(false);
+					checkBox_3.setSelected(false);
+					checkBox_4.setSelected(false);
+					checkBox_5.setSelected(false);
+					checkBox_6.setSelected(false);
+					checkBox_7.setSelected(false);
+					checkBox_8.setSelected(false);
+					checkBox_9.setSelected(false);
+					checkBox_10.setSelected(false);
+					checkBox_11.setSelected(false);
+					checkBox_12.setSelected(false);
+					checkBox_13.setSelected(false);
+				}else{
+					chart.setData(null);
+					WB_Sub_PS.Channel_PS = 0;
+				}
+			}
+		});
+		checkBox.setBackground(Color.WHITE);
+		checkBox.setBounds(12, 185, 115, 23);
+		frame.getContentPane().add(checkBox);
+				
+		checkBox_1.setBackground(Color.WHITE);
+		checkBox_1.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e){
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					if(WB_Sub_PS.DATA_READ_PS == true){
+						chart.setData(eegdata.getData(1));
+					}else{
+						WB_Sub_PS.Channel_PS = 2;
+					}
+					checkBox.setSelected(false);
+					checkBox_2.setSelected(false);
+					checkBox_3.setSelected(false);
+					checkBox_4.setSelected(false);
+					checkBox_5.setSelected(false);
+					checkBox_6.setSelected(false);
+					checkBox_7.setSelected(false);
+					checkBox_8.setSelected(false);
+					checkBox_9.setSelected(false);
+					checkBox_10.setSelected(false);
+					checkBox_11.setSelected(false);
+					checkBox_12.setSelected(false);
+					checkBox_13.setSelected(false);
+				}else{
+					chart.setData(null);
+					WB_Sub_PS.Channel_PS = 0;
+				}
+			}
+		});
+		checkBox_1.setBounds(12, 210, 115, 23);
+		frame.getContentPane().add(checkBox_1);
+		
+		checkBox_2.setBackground(Color.WHITE);
+		checkBox_2.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e){
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					if(WB_Sub_PS.DATA_READ_PS == true){
+						chart.setData(eegdata.getData(2));
+					}else{
+						WB_Sub_PS.Channel_PS = 3;
+					}
+					checkBox.setSelected(false);
+					checkBox_1.setSelected(false);
+					checkBox_3.setSelected(false);
+					checkBox_4.setSelected(false);
+					checkBox_5.setSelected(false);
+					checkBox_6.setSelected(false);
+					checkBox_7.setSelected(false);
+					checkBox_8.setSelected(false);
+					checkBox_9.setSelected(false);
+					checkBox_10.setSelected(false);
+					checkBox_11.setSelected(false);
+					checkBox_12.setSelected(false);
+					checkBox_13.setSelected(false);
+					
+				}else{
+					chart.setData(null);
+					WB_Sub_PS.Channel_PS = 0;
+				}
+			}
+		});
+		checkBox_2.setBounds(12, 235, 115, 23);
+		frame.getContentPane().add(checkBox_2);
+			
+		checkBox_3.setBackground(Color.WHITE);
+		checkBox_3.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e){
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					if(WB_Sub_PS.DATA_READ_PS == true){
+						chart.setData(eegdata.getData(3));
+					}else{
+						WB_Sub_PS.Channel_PS = 4;
+					}
+					checkBox.setSelected(false);
+					checkBox_1.setSelected(false);
+					checkBox_2.setSelected(false);
+					checkBox_4.setSelected(false);
+					checkBox_5.setSelected(false);
+					checkBox_6.setSelected(false);
+					checkBox_7.setSelected(false);
+					checkBox_8.setSelected(false);
+					checkBox_9.setSelected(false);
+					checkBox_10.setSelected(false);
+					checkBox_11.setSelected(false);
+					checkBox_12.setSelected(false);
+					checkBox_13.setSelected(false);
+					
+				}else{
+					chart.setData(null);
+					WB_Sub_PS.Channel_PS = 0;
+				}
+			}
+		});
+		checkBox_3.setBounds(12, 260, 115, 23);
+		frame.getContentPane().add(checkBox_3);
+		
+		checkBox_4.setBackground(Color.WHITE);
+		checkBox_4.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e){
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					if(WB_Sub_PS.DATA_READ_PS == true){
+						chart.setData(eegdata.getData(4));
+					}else{
+						WB_Sub_PS.Channel_PS = 5;
+					}
+					checkBox.setSelected(false);
+					checkBox_1.setSelected(false);
+					checkBox_2.setSelected(false);
+					checkBox_3.setSelected(false);
+					checkBox_5.setSelected(false);
+					checkBox_6.setSelected(false);
+					checkBox_7.setSelected(false);
+					checkBox_8.setSelected(false);
+					checkBox_9.setSelected(false);
+					checkBox_10.setSelected(false);
+					checkBox_11.setSelected(false);
+					checkBox_12.setSelected(false);
+					checkBox_13.setSelected(false);
+					
+				}else{
+					chart.setData(null);
+					WB_Sub_PS.Channel_PS = 0;
+				}
+			}
+		});
+		checkBox_4.setBounds(12, 285, 115, 23);
+		frame.getContentPane().add(checkBox_4);
+		
+		checkBox_5.setBackground(Color.WHITE);
+		checkBox_5.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e){
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					if(WB_Sub_PS.DATA_READ_PS == true){
+						chart.setData(eegdata.getData(5));
+					}else{
+						WB_Sub_PS.Channel_PS = 6;
+					}
+					checkBox.setSelected(false);
+					checkBox_1.setSelected(false);
+					checkBox_2.setSelected(false);
+					checkBox_3.setSelected(false);
+					checkBox_4.setSelected(false);
+					checkBox_6.setSelected(false);
+					checkBox_7.setSelected(false);
+					checkBox_8.setSelected(false);
+					checkBox_9.setSelected(false);
+					checkBox_10.setSelected(false);
+					checkBox_11.setSelected(false);
+					checkBox_12.setSelected(false);
+					checkBox_13.setSelected(false);
+
+				}else{
+					chart.setData(null);
+					WB_Sub_PS.Channel_PS = 0;
+				}
+			}
+		});
+		checkBox_5.setBounds(12, 310, 115, 23);
+		frame.getContentPane().add(checkBox_5);
+		
+		checkBox_6.setBackground(Color.WHITE);
+		checkBox_6.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e){
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					if(WB_Sub_PS.DATA_READ_PS == true){
+						chart.setData(eegdata.getData(6));
+					}else{
+						WB_Sub_PS.Channel_PS = 7;
+					}
+					checkBox.setSelected(false);
+					checkBox_1.setSelected(false);
+					checkBox_2.setSelected(false);
+					checkBox_3.setSelected(false);
+					checkBox_4.setSelected(false);
+					checkBox_5.setSelected(false);
+					checkBox_7.setSelected(false);
+					checkBox_8.setSelected(false);
+					checkBox_9.setSelected(false);
+					checkBox_10.setSelected(false);
+					checkBox_11.setSelected(false);
+					checkBox_12.setSelected(false);
+					checkBox_13.setSelected(false);
+					
+				}else{
+					chart.setData(null);
+					WB_Sub_PS.Channel_PS = 0;
+				}
+			}
+		});
+		checkBox_6.setBounds(12, 335, 115, 23);
+		frame.getContentPane().add(checkBox_6);
+		
+		checkBox_7.setBackground(Color.WHITE);
+		checkBox_7.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e){
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					if(WB_Sub_PS.DATA_READ_PS == true){
+						chart.setData(eegdata.getData(7));
+					}else{
+						WB_Sub_PS.Channel_PS = 8;
+					}
+					checkBox.setSelected(false);
+					checkBox_1.setSelected(false);
+					checkBox_2.setSelected(false);
+					checkBox_3.setSelected(false);
+					checkBox_4.setSelected(false);
+					checkBox_5.setSelected(false);
+					checkBox_6.setSelected(false);
+					checkBox_8.setSelected(false);
+					checkBox_9.setSelected(false);
+					checkBox_10.setSelected(false);
+					checkBox_11.setSelected(false);
+					checkBox_12.setSelected(false);
+					checkBox_13.setSelected(false);
+					
+				}else{
+					chart.setData(null);
+					WB_Sub_PS.Channel_PS = 0;
+				}
+			}
+		});
+		checkBox_7.setBounds(12, 360, 115, 23);
+		frame.getContentPane().add(checkBox_7);
+		
+		checkBox_8.setBackground(Color.WHITE);
+		checkBox_8.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e){
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					if(WB_Sub_PS.DATA_READ_PS == true){
+						chart.setData(eegdata.getData(8));
+					}else{
+						WB_Sub_PS.Channel_PS = 9;
+					}
+					checkBox.setSelected(false);
+					checkBox_1.setSelected(false);
+					checkBox_2.setSelected(false);
+					checkBox_3.setSelected(false);
+					checkBox_4.setSelected(false);
+					checkBox_5.setSelected(false);
+					checkBox_6.setSelected(false);
+					checkBox_7.setSelected(false);
+					checkBox_9.setSelected(false);
+					checkBox_10.setSelected(false);
+					checkBox_11.setSelected(false);
+					checkBox_12.setSelected(false);
+					checkBox_13.setSelected(false);
+				}else{
+					chart.setData(null);
+					WB_Sub_PS.Channel_PS = 0;
+				}
+			}
+		});
+		checkBox_8.setBounds(12, 385, 115, 23);
+		frame.getContentPane().add(checkBox_8);
+		
+		checkBox_9.setBackground(Color.WHITE);
+		checkBox_9.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e){
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					if(WB_Sub_PS.DATA_READ_PS == true){
+						chart.setData(eegdata.getData(9));
+					}else{
+						WB_Sub_PS.Channel_PS = 10;
+					}
+					checkBox.setSelected(false);
+					checkBox_1.setSelected(false);
+					checkBox_2.setSelected(false);
+					checkBox_3.setSelected(false);
+					checkBox_4.setSelected(false);
+					checkBox_5.setSelected(false);
+					checkBox_6.setSelected(false);
+					checkBox_7.setSelected(false);
+					checkBox_8.setSelected(false);
+					checkBox_10.setSelected(false);
+					checkBox_11.setSelected(false);
+					checkBox_12.setSelected(false);
+					checkBox_13.setSelected(false);
+				}else{
+					chart.setData(null);
+					WB_Sub_PS.Channel_PS = 0;
+				}
+			}
+		});
+		checkBox_9.setBounds(12, 410, 115, 23);
+		frame.getContentPane().add(checkBox_9);
+		
+		checkBox_10.setBackground(Color.WHITE);
+		checkBox_10.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e){
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					if(WB_Sub_PS.DATA_READ_PS == true){
+						chart.setData(eegdata.getData(10));
+					}else{
+						WB_Sub_PS.Channel_PS = 11;
+					}
+					checkBox.setSelected(false);
+					checkBox_1.setSelected(false);
+					checkBox_2.setSelected(false);
+					checkBox_3.setSelected(false);
+					checkBox_4.setSelected(false);
+					checkBox_5.setSelected(false);
+					checkBox_6.setSelected(false);
+					checkBox_7.setSelected(false);
+					checkBox_8.setSelected(false);
+					checkBox_9.setSelected(false);
+					checkBox_11.setSelected(false);
+					checkBox_12.setSelected(false);
+					checkBox_13.setSelected(false);
+
+				}else{
+					chart.setData(null);
+					WB_Sub_PS.Channel_PS = 0;
+				}
+			}
+		});
+		checkBox_10.setBounds(12, 435, 115, 23);
+		frame.getContentPane().add(checkBox_10);
+		
+		checkBox_11.setBackground(Color.WHITE);
+		checkBox_11.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e){
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					if(WB_Sub_PS.DATA_READ_PS == true){
+						chart.setData(eegdata.getData(11));
+					}else{
+						WB_Sub_PS.Channel_PS = 12;
+					}
+					checkBox.setSelected(false);
+					checkBox_1.setSelected(false);
+					checkBox_2.setSelected(false);
+					checkBox_3.setSelected(false);
+					checkBox_4.setSelected(false);
+					checkBox_5.setSelected(false);
+					checkBox_6.setSelected(false);
+					checkBox_7.setSelected(false);
+					checkBox_8.setSelected(false);
+					checkBox_9.setSelected(false);
+					checkBox_10.setSelected(false);
+					checkBox_12.setSelected(false);
+					checkBox_13.setSelected(false);
+					
+				}else{
+					chart.setData(null);
+					WB_Sub_PS.Channel_PS = 0;
+				}
+			}
+		});
+		checkBox_11.setBounds(12, 460, 115, 23);
+		frame.getContentPane().add(checkBox_11);
+		
+		checkBox_12.setBackground(Color.WHITE);
+		checkBox_12.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e){
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					if(WB_Sub_PS.DATA_READ_PS == true){
+						chart.setData(eegdata.getData(12));
+					}else{
+						WB_Sub_PS.Channel_PS = 13;
+					}
+					checkBox.setSelected(false);
+					checkBox_1.setSelected(false);
+					checkBox_2.setSelected(false);
+					checkBox_3.setSelected(false);
+					checkBox_4.setSelected(false);
+					checkBox_5.setSelected(false);
+					checkBox_6.setSelected(false);
+					checkBox_7.setSelected(false);
+					checkBox_8.setSelected(false);
+					checkBox_9.setSelected(false);
+					checkBox_10.setSelected(false);
+					checkBox_11.setSelected(false);
+					checkBox_13.setSelected(false);
+					
+				}else{
+					chart.setData(null);
+					WB_Sub_PS.Channel_PS = 0;
+				}
+			}
+		});
+		checkBox_12.setBounds(12, 485, 115, 23);
+		frame.getContentPane().add(checkBox_12);
+		
+		checkBox_13.setBackground(Color.WHITE);
+		checkBox_13.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e){
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					if(WB_Sub_PS.DATA_READ_PS == true){
+						chart.setData(eegdata.getData(13));
+					}else{
+						WB_Sub_PS.Channel_PS = 14;
+					}
+					checkBox.setSelected(false);
+					checkBox_1.setSelected(false);
+					checkBox_2.setSelected(false);
+					checkBox_3.setSelected(false);
+					checkBox_4.setSelected(false);
+					checkBox_5.setSelected(false);
+					checkBox_6.setSelected(false);
+					checkBox_7.setSelected(false);
+					checkBox_8.setSelected(false);
+					checkBox_9.setSelected(false);
+					checkBox_10.setSelected(false);
+					checkBox_11.setSelected(false);
+					checkBox_12.setSelected(false);
+					
+				}else{
+					chart.setData(null);
+					WB_Sub_PS.Channel_PS = 0;
+				}
+			}
+		});
+		checkBox_13.setBounds(12, 510, 115, 23);
+		frame.getContentPane().add(checkBox_13);
+		
+		JLabel lblEegDataChannel = new JLabel("EEG Data Channel");
+		lblEegDataChannel.setHorizontalAlignment(SwingConstants.CENTER);
+		lblEegDataChannel.setFont(new Font("굴림", Font.PLAIN, 14));
+		lblEegDataChannel.setBounds(12, 145, 165, 34);
+		frame.getContentPane().add(lblEegDataChannel);
+		
+		JButton btnEegAnalysis = new JButton("EEG Relative Power Analysis");
+		btnEegAnalysis.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e){
+				EventQueue.invokeLater(new Runnable(){
+					@Override
+					public void run(){
+						try{
+							WB_Relative sub_rel = new WB_Relative();
+							// 주파수 상관관계 분석 페이지
+						}catch(Exception e){
+							e.printStackTrace();
+						}
+					}
+				});
+			}
+		});
+		btnEegAnalysis.setBackground(Color.WHITE);
+		btnEegAnalysis.setBounds(12, 539, 199, 48);
+		frame.getContentPane().add(btnEegAnalysis);
+		
+		frame.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e){
+				BarChart_Line.str = null;
+				BarChart_FFT.str = null;
+				BarChart_FFT.fft_data = null;
+				
+				chart.Timer_Stop();
+				chart2.Timer_Stop();
+				
+				chart.setData(null);
+				BarChart_FFT.setData(null);
+				WB_Sub_PS.DATA_READ_PS = false;
+				WB_Sub_PS.Channel_PS = 0;
+
+				frame.dispose();
+			}
+		});
+	}	
+}

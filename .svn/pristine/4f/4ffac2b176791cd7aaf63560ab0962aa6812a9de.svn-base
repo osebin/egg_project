@@ -1,0 +1,39 @@
+package panel;
+
+import javax.swing.*;
+
+import org.jfree.chart.*;
+
+import chart.*;
+import java.awt.Color;
+
+public class State_Log extends JPanel {
+		
+	JPanel Panel;
+	
+//	panel_1.setBounds(12, 10, 682, 608);
+	
+	public State_Log() {
+		init();
+	}
+	
+	public void set_Panel(State_Log panel){
+		panel.add(Panel);
+	}
+	
+	private void init(){
+		Panel = new JPanel();
+		Panel.setBackground(Color.WHITE);
+		Panel.setBounds(12, 10, 682, 608);
+		Panel.setVisible(true);
+		Panel.setLayout(null);
+		
+		final BarChart_State state = new BarChart_State();
+		JFreeChart state_chart = state.createDemoPanel();
+		ChartPanel state_panel = new ChartPanel(state_chart);
+		state_panel.setBounds(0, 65, 682, 543);
+		state_panel.setVisible(true);
+		Panel.add(state_panel);
+		
+	}
+}

@@ -1,0 +1,59 @@
+package panel;
+
+import javax.swing.*;
+
+import org.jfree.chart.*;
+
+import processing.Circle;
+import windowbuilder.EEG_Main;
+
+import chart.*;
+
+import java.awt.Color;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.util.StringTokenizer;
+import javax.swing.border.EtchedBorder;
+
+public class EEG_3D extends JPanel {
+	
+	private JPanel Panel;
+	private AllChannel 			all; // 14 채널 차트
+	private TimeLineChart_1 	chart_1; // 싱글 채널 차트
+	
+	public static boolean hi_pass = true;
+//	panel_1.setBounds(12, 10, 682, 608);
+	
+	public EEG_3D() {
+		
+		init();
+	}
+	
+	public void set_Panel(EEG_Panel_1 panel){
+		panel.add(Panel);
+	}
+	
+	private void init(){
+		Panel = new JPanel();
+		Panel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		Panel.setBackground(Color.WHITE);
+		Panel.setBounds(12, 10, 682, 608);
+		Panel.setVisible(true);
+		Panel.setLayout(null);
+		
+		JPanel panel = new JPanel();
+		panel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		panel.setBounds(12, 199, 317, 399);
+		Panel.add(panel);
+		
+		JPanel panel_1 = new JPanel();
+		panel_1.setBounds(341, 199, 329, 399);
+		Panel.add(panel_1);
+		
+		all = new AllChannel();
+		JFreeChart chart = all.getChart();
+		
+		
+
+	}
+}

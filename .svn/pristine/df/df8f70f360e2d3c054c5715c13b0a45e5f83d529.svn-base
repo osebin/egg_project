@@ -1,0 +1,144 @@
+package chart;
+
+import java.awt.*;
+import java.awt.event.*;
+import java.util.Random;
+import java.util.ArrayList;
+import javax.swing.*;
+
+import org.jfree.chart.*;
+import org.jfree.chart.labels.*;
+import org.jfree.chart.plot.*;
+import org.jfree.chart.title.*;
+import org.jfree.data.category.*;
+import org.jfree.ui.*;
+
+public class SpiderWebChart {
+	Animator_spider animator;
+	
+	public SpiderWebChart(){}
+	
+	static ArrayList<Double> data = new ArrayList<Double>();
+	public static double[] logdata = new double[5];
+	
+	public static void setData_spider(ArrayList<Double> adata){
+		data.clear();
+		data = adata;
+	}
+	private static DefaultCategoryDataset createDataset(){
+		String str1 = "First";
+	    
+	    String str4 = "DELTA";
+	    String str5 = "THETA";
+	    String str6 = "ALPHA";
+	    String str7 = "SMR";
+	    String str8 = "BETA";
+	    
+	    DefaultCategoryDataset localDefaultCategoryDataset = new DefaultCategoryDataset();
+	    
+	    localDefaultCategoryDataset.addValue(5.0D, str1, str4);
+	    localDefaultCategoryDataset.addValue(5.0D, str1, str5);
+	    localDefaultCategoryDataset.addValue(5.0D, str1, str6);
+	    localDefaultCategoryDataset.addValue(5.0D, str1, str7);
+	    localDefaultCategoryDataset.addValue(5.0D, str1, str8);
+
+	    return localDefaultCategoryDataset;
+	}
+	
+	private static JFreeChart createChart(CategoryDataset paramCategoryDataset)
+	{
+	    SpiderWebPlot localSpiderWebPlot = new SpiderWebPlot(paramCategoryDataset);
+	    localSpiderWebPlot.setStartAngle(54.0D);
+	    localSpiderWebPlot.setInteriorGap(0.2D);
+	    localSpiderWebPlot.setToolTipGenerator(new StandardCategoryToolTipGenerator());
+	    localSpiderWebPlot.setBackgroundPaint(Color.white);
+
+	    JFreeChart localJFreeChart = new JFreeChart(
+	    		null, 
+	    		TextTitle.DEFAULT_FONT, 
+	    		localSpiderWebPlot, 
+	    		false);
+	    
+	    localJFreeChart.setBorderPaint(Color.white);
+	    localJFreeChart.setBorderVisible(false);
+
+	    return localJFreeChart;
+	}
+	
+	public JFreeChart createPanel(){
+		DefaultCategoryDataset dataset = createDataset();
+		JFreeChart chart = createChart(dataset);
+		chart.setBackgroundPaint(Color.white);
+		animator = new Animator_spider(dataset);
+		
+		return chart;
+	}
+	
+	public void dataStart(){
+		animator.start();
+	}
+	public void dataStop(){
+		animator.stop();
+	}
+}
+
+@SuppressWarnings("serial")
+class Animator_spider extends Timer implements ActionListener{
+	double change = 0;
+	private DefaultCategoryDataset dataset;
+	private Random random = new Random();
+	
+	public Animator_spider(DefaultCategoryDataset dataset) {
+		super(500, null);
+		this.dataset = dataset;
+		addActionListener(this);
+		// TODO Auto-generated constructor stub
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// TODO Auto-generated method stub
+		Comparable rowKey = this.dataset.getRowKey(0);
+		double[] change = new double[5];
+		double sum = 0;
+		
+		for(int i = 0; i < 5; i++){
+			if(SpiderWebChart.data != null){
+				ArrayList<Double> indata = new ArrayList<>();
+				indata = SpiderWebChart.data;
+				if(i == 0){
+        			for(int in = 0; in < 4; in++){// 0 1 2 3 >> 1 ~ 4
+            			change[i] += indata.get(in);
+            		}
+        		}else if(i == 1){
+        			for(int in = 3; in < 8; in++){// 3 4 5 6 7 >> 4 ~ 8 
+            			change[i] += indata.get(in);
+            		}
+        		}else if(i == 2){
+        			for(int in = 7; in < 12; in++){// 7 8 9 10 11 >> 8 ~ 12 
+            			change[i] += indata.get(in);
+            		}
+        		}else if(i == 3){
+        			for(int in = 11; in < 15; in++){// 11 12 13 14 >> 12 ~ 15 
+            			change[i] += indata.get(in);
+            		}
+        		}else if(i == 4){
+        			for(int in = 14; in < 18; in++){// 14 15 16 17 >> 15 ~ 18 
+            			change[i] += indata.get(in);
+            		}
+        		}
+			}else{
+				change[i] = 0;
+			}
+			
+			sum += change[i];
+		}
+		
+		for(int i = 0; i < 5; i++){
+			Comparable key = this.dataset.getColumnKey(i);
+			dataset.setValue(change[i]/sum*7, rowKey, key);
+			SpiderWebChart.logdata[i] = change[i]/sum*7; 
+		}
+		
+	}
+}

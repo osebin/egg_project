@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/JOGL"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
+	<classpathentry kind="lib" path="Lib/core.jar"/>
+	<classpathentry kind="lib" path="Lib/gluegen-rt.jar"/>
+	<classpathentry kind="lib" path="Lib/jcommon-1.0.17.jar"/>
+	<classpathentry kind="lib" path="Lib/jfreechart-1.0.14.jar"/>
+	<classpathentry kind="lib" path="Lib/jna.jar"/>
+	<classpathentry kind="lib" path="Lib/jogl.jar"/>
+	<classpathentry kind="lib" path="Lib/PeasyCam.jar"/>
+	<classpathentry kind="lib" path="Lib/sketch_jun12a.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

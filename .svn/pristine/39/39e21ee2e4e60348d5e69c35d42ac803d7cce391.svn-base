@@ -1,0 +1,161 @@
+package panel;
+
+import java.awt.*;
+
+import javax.swing.*;
+
+import org.jfree.chart.*;
+
+import chart.*;
+
+public class EEG_FFT extends JPanel {
+	
+	JCheckBox Hi;
+	JCheckBox All;
+	JCheckBox AF3;
+	JCheckBox F7;
+	JCheckBox F3;
+	JCheckBox FC5;
+	JCheckBox T7;
+	JCheckBox P7;
+	JCheckBox O1;
+	JCheckBox O2;
+	JCheckBox P8;
+	JCheckBox T8; 
+	JCheckBox FC6;
+	JCheckBox F4; 
+	JCheckBox F8; 
+	JCheckBox AF4;
+	
+	private JSeparator separator_2;
+	
+	JPanel Panel;
+	
+	public EEG_FFT() {
+		set_checkbox();
+		init();
+	}
+	
+	public void set_Panel(EEG_FFT panel){
+		panel.add(Panel);
+	}
+	
+	private void init(){
+		Panel = new JPanel();
+		Panel.setBackground(Color.WHITE);
+		Panel.setBounds(12, 10, 682, 608);
+		Panel.setVisible(true);
+		Panel.setLayout(null);
+		
+		final BarChart_Line fft_line = new BarChart_Line();
+		JFreeChart fft_line_chart = fft_line.createDemoPanel();
+		ChartPanel panel = new ChartPanel(fft_line_chart);
+		panel.setBounds(0, 444, 682, 164);
+		panel.setVisible(true);
+		Panel.add(panel);
+		
+		final BarChart_FFT fft_data = new BarChart_FFT();
+		JFreeChart fft_data_chart = fft_data.createDemoPanel();
+		ChartPanel fft_panel = new ChartPanel(fft_data_chart);
+		fft_panel.setBounds(116, 0, 566, 434);
+		fft_panel.setVisible(true);
+		Panel.add(fft_panel);
+		
+		Panel.add(Hi);
+		Panel.add(All);
+		Panel.add(AF3);
+		Panel.add(F7);
+		Panel.add(F3);
+		Panel.add(FC5);
+		Panel.add(T7);
+		Panel.add(P7);
+		Panel.add(O1);
+		Panel.add(O2);
+		Panel.add(P8);
+		Panel.add(T8);
+		Panel.add(FC6);
+		Panel.add(F4);
+		Panel.add(F8);
+		Panel.add(AF4);
+		
+		JSeparator separator = new JSeparator();
+		separator.setBackground(Color.WHITE);
+		separator.setBounds(5, 32, 100, 12);
+		Panel.add(separator);
+		
+		JSeparator separator_1 = new JSeparator();
+		separator_1.setBackground(Color.WHITE);
+		separator_1.setBounds(5, 62, 100, 12);
+		Panel.add(separator_1);
+		
+		separator_2 = new JSeparator();
+		separator_2.setBounds(8, 387, 100, 12);
+		Panel.add(separator_2);
+	}
+	
+	private void set_checkbox(){
+		Hi = new JCheckBox("H-Pass Filter");
+		Hi.setBackground(Color.WHITE);
+		Hi.setBounds(8, 6, 100, 20);
+		
+		All = new JCheckBox("All Channel");
+		All.setBackground(Color.WHITE);
+		All.setBounds(8, 36, 100, 20);
+		
+		AF3 = new JCheckBox(" AF3"); // 1
+		AF3.setBackground(Color.WHITE);
+		AF3.setBounds(8, 76, 100, 20);
+		
+		F7 = new JCheckBox(" F7"); // 2
+		F7.setBackground(Color.WHITE);
+		F7.setBounds(8, 98, 100, 20);
+		
+		F3 = new JCheckBox(" F3"); // 3
+		F3.setBackground(Color.WHITE);
+		F3.setBounds(8, 120, 100, 20);
+		
+		FC5 = new JCheckBox(" FC5"); // 4
+		FC5.setBackground(Color.WHITE);
+		FC5.setBounds(8, 142, 100, 20);
+		
+		T7 = new JCheckBox(" T7"); // 5
+		T7.setBackground(Color.WHITE);
+		T7.setBounds(8, 164, 100, 20);
+		
+		P7 = new JCheckBox(" P7"); // 6
+		P7.setBackground(Color.WHITE);
+		P7.setBounds(8, 186, 100, 20);
+		
+		O1 = new JCheckBox(" O1"); // 7
+		O1.setBackground(Color.WHITE);
+		O1.setBounds(8, 208, 100, 20);
+		
+		O2 = new JCheckBox(" O2"); // 8
+		O2.setBackground(Color.WHITE);
+		O2.setBounds(8, 230, 100, 20);
+		
+		P8 = new JCheckBox(" P8"); // 9
+		P8.setBackground(Color.WHITE);
+		P8.setBounds(8, 252, 100, 20);
+		
+		T8 = new JCheckBox(" T8"); // 10
+		T8.setBackground(Color.WHITE);
+		T8.setBounds(8, 273, 100, 20);
+		
+		FC6 = new JCheckBox(" FC6"); // 11
+		FC6.setBackground(Color.WHITE);
+		FC6.setBounds(8, 295, 100, 20);
+		
+		F4 = new JCheckBox(" F4"); // 12
+		F4.setBackground(Color.WHITE);
+		F4.setBounds(8, 317, 100, 20);
+		
+		F8 = new JCheckBox(" F8"); // 13
+		F8.setBackground(Color.WHITE);
+		F8.setBounds(8, 339, 100, 20);
+		
+		AF4 = new JCheckBox(" AF4"); // 14
+		AF4.setBackground(Color.WHITE);
+		AF4.setBounds(8, 361, 100, 20);
+	}
+}

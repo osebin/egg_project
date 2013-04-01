@@ -1,0 +1,580 @@
+package jogl_topo;
+
+import java.awt.BorderLayout;
+import java.awt.event.MouseEvent;
+
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.InputStreamReader;
+import java.nio.FloatBuffer;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.StringTokenizer;
+
+import javax.media.opengl.DebugGL;
+import javax.media.opengl.GL;
+import javax.media.opengl.GLAutoDrawable;
+import javax.media.opengl.GLCanvas;
+import javax.media.opengl.GLCapabilities;
+import javax.media.opengl.GLEventListener;
+import javax.media.opengl.glu.GLU;
+import javax.media.opengl.glu.GLUquadric;
+import javax.swing.JFrame;
+import javax.media.opengl.*;
+
+import jogl_topo.Colorvalues;
+import jogl_topo.DrawCircle;
+import jogl_topo.Data;
+import jogl_topo.Draw;
+import jogl_topo.Colorvalues;
+import jogl_topo.MeshFace;
+import jogl_topo.NormalVector;
+import com.sun.opengl.util.FPSAnimator;
+
+public class JOGL_Topo extends GLCanvas implements GLEventListener,
+		MouseListener, MouseMotionListener, GLUquadric, Runnable {
+
+	private static final long serialVersionUID = 1L;
+	private GLU glu; // GL units
+	private int fps = 60;
+	private FPSAnimator animator;
+	
+	private float moveX = 0;
+	private int oldX = 0;
+	private boolean isDragging = false;
+	private GL gl;
+	
+	int flag, flag1;
+	boolean flag2 = true;
+
+	
+	private static Colorvalues[] color_V = new Colorvalues[16];
+	private static DrawCircle[] draw_Circle = new DrawCircle[16];
+	private Draw draw= new Draw();
+	
+	public static int[] Color_data = new int[14];
+	
+	ArrayList<Data> vertex = new ArrayList<Data>();
+	ArrayList<NormalVector> vector = new ArrayList<NormalVector>();
+	ArrayList<MeshFace> faces = new ArrayList<MeshFace>();
+	
+//	float time = 0;
+	
+	private static float[] RED = {1f, 0f,0f};
+	private static float[] GREEN = {0f, 1f, 0f};
+	private static float[] BLUE  = {0f,0f,1f};
+	private static float[] BLACK = {0f,0f,0f};
+	private static float[] WHITE = {1f,1f,1f};
+	private static float[] Orange = {1f,0.2f,0f};
+	private static float[] Yellow = {1f,1f,0f};
+	private static float[] Indigo = {0f,0f,0.2f};//占쏙옙占쏙옙
+	private static float[] Purple = {0.4f,0f,0.4f};//占쏙옙占쏙옙
+	
+	
+	
+	public JOGL_Topo(GLCapabilities capabilities, int width, int height) {
+		addGLEventListener(this);
+
+		setData("Object/sample2.obj");
+		for (int i = 0; i < color_V.length; i++) {
+			color_V[i] = new Colorvalues();
+		}
+		for (int i = 0; i < draw_Circle.length; i++) {
+			draw_Circle[i] = new DrawCircle();
+		}
+	}
+	public JOGL_Topo() {
+		
+	}
+	
+	public static GLCapabilities createGLCapabilities() {
+
+		GLCapabilities capabilities = new GLCapabilities();
+		capabilities.setRedBits(8);
+		capabilities.setBlueBits(8);
+		capabilities.setGreenBits(8);
+		capabilities.setAlphaBits(8);
+
+		return capabilities;
+
+	}
+
+
+
+	@Override
+	public void display(GLAutoDrawable drawable) {
+		// TODO Auto-generated method stub
+		if (isDragging == false) {
+			moveX++;
+		}
+//		time++;
+		
+		final GL gl = drawable.getGL();
+		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+		gl.glClearColor(0,0,0,0);
+		setCamera(gl, glu, 100);
+		//drawLine();
+		draw.drawFace(gl, vertex,vector,faces);
+	}
+		//////////
+		
+
+		
+		/////////
+//		private void drawLine() {
+//		gl.glBegin(gl.GL_LINE_LOOP);//red X
+//		gl.glColor3f(1.0f, 0.0f, 0.0f);
+//		gl.glVertex3f(70.0f, 0.0f, 0.0f);
+//		gl.glVertex3f(-70.0f, 0.0f, 0.0f);
+//		gl.glEnd();
+//		gl.glBegin(gl.GL_LINE_LOOP);//green Y
+//		gl.glColor3f(0.0f, 1.0f, 0.0f);
+//		gl.glVertex3f(0.0f, 70.0f, 0.0f);
+//		gl.glVertex3f(0.0f, -70.0f, 0.0f);
+//		gl.glEnd();
+//		gl.glBegin(gl.GL_LINE_LOOP);//blue Z
+//		gl.glColor3f(0.0f, 0.0f, 1.0f);
+//		gl.glVertex3f(0.0f, 0.0f, 70.0f);
+//		gl.glVertex3f(0.0f, 0.0f, -70.0f);
+//	
+//		gl.glEnd();
+//	
+//		}
+
+
+	private void setCamera(GL gl,  GLU glu, float distance) {
+		gl.glMatrixMode(GL.GL_PROJECTION);
+		gl.glLoadIdentity();
+
+		float widthHeightRatio = (float) getWidth() / (float) getHeight();
+		glu.gluPerspective(45, widthHeightRatio, 1, 1000);
+		
+		glu.gluLookAt(0, 50, 90,
+						0, 20, 0,
+						0, 100, 0);
+
+		gl.glRotatef(moveX/2, 0, 100, 1);
+
+		gl.glMatrixMode(GL.GL_MODELVIEW);
+		gl.glLoadIdentity();	
+		
+		Channel();
+		//////////////////////////
+
+
+		
+	}
+	//채占쏙옙 占쏙옙占쏙옙
+	public void Channel(){
+		float i =1;
+		// /////////////////////////////////////////////////////
+				GLUquadric quadric = glu.gluNewQuadric();
+				gl.glLoadIdentity();
+				////////////////////////////占쏙옙占쏙옙 占쏙옙占쏙옙 占싣뤄옙
+	
+//		draw_Circle[0].drawCircles(gl, glu, quadric, -4.2084, 43.0455, 20.1713,
+//				50.0f, 1.0f, 0.0f, 0.2f, i, color_V[0].parse,
+//				color_V[0].parse1, color_V[0].parse2);
+//		// //////////////////////////占쏙옙占쏙옙 占쏙옙占쏙옙 占싣뤄옙
+//		draw_Circle[1].drawCircles(gl, glu, quadric, 3.0084, 42.8455, 20.1713,
+//				50.0f, 1.0f, 0.0f, -0.2f, i, color_V[1].parse,
+//				color_V[1].parse1, color_V[1].parse2);
+//		// //////////////////////////占쏙옙占쏙옙 占쏙옙占쏙옙 占싸뱄옙째 占싣뤄옙
+//		draw_Circle[2].drawCircles(gl, glu, quadric, 9.5, 39.3633, 17.9635,
+//				70.0f, 1.0f, 0.0f, -1.2f, i, color_V[2].parse,
+//				color_V[2].parse1, color_V[2].parse2);
+//		// ////////////////////////占쏙옙占쏙옙 占쏙옙占쏙옙 占싸뱄옙째 占싣뤄옙
+//		draw_Circle[3].drawCircles(gl, glu, quadric, -11.00, 39.3633, 18.0635,
+//				70.0f, 1.0f, 0.0f, 1.2f, i, color_V[3].parse,
+//				color_V[3].parse1, color_V[3].parse2);
+//		// //////////////////////////////占쏙옙占쏙옙 占쏙옙占쏙옙 占쏙옙
+//		draw_Circle[4].drawCircles(gl, glu, quadric, -4.6641,  48.3987, 12.2996,
+//				90.0f, 0.5f, 2.5f, 0.9f, i, color_V[4].parse,
+//				color_V[4].parse1, color_V[4].parse2);
+//		// /////////////////////////////占쏙옙占쏙옙 占쏙옙占쏙옙 占쏙옙
+//		draw_Circle[5].drawCircles(gl, glu, quadric, 3.2641, 48.3987, 12.2996,
+//				90.0f, 1.0f, 2.5f, 0.0f, i, color_V[5].parse,
+//				color_V[5].parse1, color_V[5].parse2);
+//		// ///////////////////////////占쏙옙占쏙옙 占싸뱄옙째 占쏙옙占쏙옙 占쏙옙
+//		draw_Circle[6].drawCircles(gl, glu, quadric, 10.0403, 43.7706, 12.5307,
+//				50.0f, 1.0f, 0.0f, -1.5f, i, color_V[6].parse,
+//				color_V[6].parse1, color_V[6].parse2);
+//		// ///////////////////////////占쏙옙占쏙옙 占싸뱄옙 占쏙옙占쏙옙 占쏙옙
+//		draw_Circle[7].drawCircles(gl, glu, quadric, -11.0403, 43.7706, 12.5307,
+//				50.0f, 1.0f, 0.0f, 2.5f, i, color_V[7].parse,
+//				color_V[7].parse1, color_V[7].parse2);
+//		// //////////////////////////占쏙옙占쏙옙占쏙옙 占쏙옙 占쌕뤄옙 占쏙옙s
+//		draw_Circle[8].drawCircles(gl, glu, quadric, 15.295, 30.4779, 4.1488,
+//				90.0f, 0.0f, 0.0f, 2.0f, i, color_V[8].parse,
+//				color_V[8].parse1, color_V[8].parse2);
+//		// /////////////////////////占쏙옙占쏙옙 占쏙옙 占쌕뤄옙 占쏙옙
+//		draw_Circle[9].drawCircles(gl, glu, quadric, -16.7841, 30.4779, 4.1488,
+//				90.0f, 0.0f, 0.0f, 2.0f, i, color_V[9].parse,
+//				color_V[9].parse1, color_V[9].parse2);
+//		// ////////////////////////占쏙옙占쏙옙 占쏙옙 占쌕뤄옙 占쏙옙
+//		draw_Circle[10].drawCircles(gl, glu, quadric, -15.5341, 23.6797,
+//				-1.0274, 105.0f, 0.0f, 0.0f, 1.5f, i, color_V[10].parse,
+//				color_V[10].parse1, color_V[10].parse2);
+//		// ///////////////////////占쏙옙占쏙옙占십깍옙 占쌕뤄옙 占쏙옙
+//		draw_Circle[11].drawCircles(gl, glu, quadric, 14.5341, 23.6797,
+//				-1.0274, 80.0f, 0.0f, 0.0f, 1.5f, i, color_V[11].parse,
+//				color_V[11].parse1, color_V[11].parse2);
+//		// ///////////////////////占쏙옙占쏙옙占십깍옙 占쏙옙占쏙옙占쏙옙 占싸뱄옙째
+//		draw_Circle[12].drawCircles(gl, glu, quadric, 13.5617, 33.4290,
+//				-6.0930, 105.0f, 1.0f, -0.6f, 1.0f, i, color_V[12].parse,
+//				color_V[12].parse1, color_V[12].parse2);
+//		// ///////////////////////占쏙옙占십깍옙 占쏙옙占쏙옙占쏙옙 占싸뱄옙째
+//		draw_Circle[13].drawCircles(gl, glu, quadric, -15.0617, 33.4290,
+//				-6.0930, 105.0f, 0.5f, -1.2f, 2.5f, i, color_V[13].parse,
+//				color_V[13].parse1, color_V[13].parse2);
+//		// ///////////////////////占쏙옙占쏙옙占쏙옙 占쏙옙 占쏙옙 占쏙옙
+//		draw_Circle[14].drawCircles(gl, glu, quadric, 13.0435, 41.0030,
+//				-1.0177, 120.0f, 3.0f, -1.5f, 3.0f, i, color_V[14].parse,
+//				color_V[14].parse1, color_V[14].parse2);
+//		// ///////////////////////占쏙옙占쏙옙 占쏙옙 占쏙옙 占쏙옙
+//		draw_Circle[15].drawCircles(gl, glu, quadric, -15.0435, 41.0030,
+//				-1.0177, 105.0f, 1.0f, -2.5f, 2.0f, i, color_V[15].parse,
+//				color_V[15].parse1, color_V[15].parse2);
+				
+				// //////////////////////////정면 우측 아래xx
+				draw_Circle[0].drawCircles(gl, glu, quadric, 3.0084, 42.8455, 20.1713,
+						50.0f, 1.0f, 0.0f, -0.2f, i, color_V[0].parse,
+						color_V[0].parse1, color_V[0].parse2);
+				// //////////////////////////정면 우측 두번째 아래xx
+				draw_Circle[1].drawCircles(gl, glu, quadric, 9.5, 39.3633, 17.9635,
+						70.0f, 1.0f, 0.0f, -1.2f, i, color_V[1].parse,
+						color_V[1].parse1, color_V[1].parse2);
+				// /////////////////////////////정면 우측 위xx
+				draw_Circle[2].drawCircles(gl, glu, quadric, 3.2641, 48.3987, 12.2996,
+						90.0f, 1.0f, 2.5f, 0.0f, i, color_V[2].parse,
+						color_V[2].parse1, color_V[2].parse2);
+				// ///////////////////////////정면 두번째 우측 위xx
+				draw_Circle[3].drawCircles(gl, glu, quadric, 10.0403, 43.7706, 12.5307,
+						50.0f, 1.0f, 0.0f, -1.5f, i, color_V[3].parse,
+						color_V[3].parse1, color_V[3].parse2);
+				// //////////////////////////오른쪽 귀 바로 위xx
+				draw_Circle[4].drawCircles(gl, glu, quadric, 15.295, 30.4779, 4.1488,
+						90.0f, 0.0f, 0.0f, 2.0f, i, color_V[4].parse,
+						color_V[4].parse1, color_V[4].parse2);
+				// ///////////////////////오른쪽귀 위에서 두번째
+				draw_Circle[5].drawCircles(gl, glu, quadric, 13.5617, 33.4290, -6.0930,
+						105.0f, 1.0f, -0.6f, 1.0f, i, color_V[5].parse,
+						color_V[5].parse1, color_V[5].parse2);
+				// ///////////////////////오른쪽 귀 맨 위
+				draw_Circle[6].drawCircles(gl, glu, quadric, 13.0435, 41.0030, -1.0177,
+						120.0f, 3.0f, -1.5f, 3.0f, i, color_V[6].parse,
+						color_V[6].parse1, color_V[6].parse2);
+				// ///////////////////////왼쪽 귀 맨 위
+				draw_Circle[7].drawCircles(gl, glu, quadric, -15.0435, 41.0030,
+						-1.0177, 105.0f, 1.0f, -2.5f, 2.0f, i, color_V[7].parse,
+						color_V[7].parse1, color_V[7].parse2);
+				// ///////////////////////왼쪽귀 위에서 두번째
+				draw_Circle[8].drawCircles(gl, glu, quadric, -15.0617, 33.4290,
+						-6.0930, 105.0f, 0.5f, -1.2f, 2.5f, i, color_V[8].parse,
+						color_V[8].parse1, color_V[8].parse2);
+				// /////////////////////////왼쪽 귀 바로 위
+				draw_Circle[9].drawCircles(gl, glu, quadric, -16.7841, 30.4779, 4.1488,
+						90.0f, 0.0f, 0.0f, 2.0f, i, color_V[9].parse,
+						color_V[9].parse1, color_V[9].parse2);
+				// ///////////////////////////정면 두번쨰 좌측 위
+				draw_Circle[10].drawCircles(gl, glu, quadric, -11.0403, 43.7706,
+						12.5307, 50.0f, 1.0f, 0.0f, 2.5f, i, color_V[10].parse,
+						color_V[10].parse1, color_V[10].parse2);
+				// //////////////////////////////정면 좌측 위
+				draw_Circle[11].drawCircles(gl, glu, quadric, -4.6641, 48.3987,
+						12.2996, 90.0f, 0.5f, 2.5f, 0.9f, i, color_V[11].parse,
+						color_V[11].parse1, color_V[11].parse2);
+				// ////////////////////////정면 좌측 두번째 아래
+				draw_Circle[12].drawCircles(gl, glu, quadric, -11.00, 39.3633, 18.0635,
+						70.0f, 1.0f, 0.0f, 1.2f, i, color_V[12].parse,
+						color_V[12].parse1, color_V[12].parse2);
+				// //////////////////////////정면 좌측 아래
+				draw_Circle[13].drawCircles(gl, glu, quadric, -4.2084, 43.0455,
+						20.1713, 50.0f, 1.0f, 0.0f, 0.2f, i, color_V[13].parse,
+						color_V[13].parse1, color_V[13].parse2);
+				// ////////////////////////왼쪽 귀 바로 뒤
+				draw_Circle[14].drawCircles(gl, glu, quadric, -15.5341, 23.6797,
+						-1.0274, 105.0f, 0.0f, 0.0f, 1.5f, i, color_V[14].parse,
+						color_V[14].parse1, color_V[14].parse2);
+				// ///////////////////////오른쪽귀 바로 뒤
+				draw_Circle[15].drawCircles(gl, glu, quadric, 14.5341, 23.6797,
+						-1.0274, 80.0f, 0.0f, 0.0f, 1.5f, i, color_V[15].parse,
+						color_V[15].parse1, color_V[15].parse2);
+				
+	}
+
+	//占쏙옙占�占쏙옙占쏙옙
+	public void Light() {
+		// //////////////LIGHT//////
+		gl.glEnable(GL.GL_LIGHTING);
+
+		float ambient[] = { 0.8f, 0.6f, 0.5f, 0.1f };
+		gl.glLightModelfv(GL.GL_LIGHT_MODEL_AMBIENT, ambient, 0);
+		//
+
+		// ////////////////////////////////////占쏙옙占쏙옙1
+
+		float position[] = { 0, -80, 0, 0.1f };
+		gl.glLightfv(GL.GL_LIGHT0, GL.GL_POSITION, position, 0);
+
+		float intensity[] = { 0.8f, 0.6f, 0.5f, 0.1f };
+		gl.glLightfv(GL.GL_LIGHT0, GL.GL_DIFFUSE, intensity, 0);
+		gl.glEnable(GL.GL_LIGHT0);
+		// ////////////////////////////////////占쏙옙占쏙옙2
+
+		float position1[] = { 0, 80, 0, 0.1f };
+		gl.glLightfv(GL.GL_LIGHT1, GL.GL_POSITION, position1, 0);
+
+		gl.glLightfv(GL.GL_LIGHT1, GL.GL_DIFFUSE, intensity, 0);
+		gl.glEnable(GL.GL_LIGHT1);
+		// ///////////////////////////////////
+		gl.glEnable(GL.GL_COLOR_MATERIAL);
+		gl.glColorMaterial(GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT_AND_DIFFUSE);
+
+		gl.glMaterialf(GL.GL_FRONT_AND_BACK, GL.GL_SHININESS, 10);
+		gl.glEnable(GL.GL_POINT_SMOOTH);
+
+		gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		gl.glShadeModel(GL.GL_SMOOTH);
+	}
+	
+	@Override
+	public void displayChanged(GLAutoDrawable drawable, boolean modeChanged,
+			boolean deviceChanged) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException(
+				"Changing display is not supported");
+	}
+	
+	@Override
+	public void init(GLAutoDrawable drawable) {
+		// TODO Auto-generated method stub
+		Thread thread = new Thread(new JOGL_Topo());
+		thread.start();
+		drawable.addMouseListener(this);
+		drawable.addMouseMotionListener(this);
+		drawable.setGL(new DebugGL(drawable.getGL()));
+		gl = drawable.getGL();
+
+		gl.glEnable(GL.GL_DEPTH_TEST);
+
+		//占쏙옙占�占쏙옙占쏙옙
+		Light();
+
+		glu = new GLU();
+		
+		
+		animator = new FPSAnimator(this, fps);
+		animator.start();
+
+	}
+
+	@Override
+	public void reshape(GLAutoDrawable drawable, int x, int y, int width,
+			int height) {
+		// TODO Auto-generated method stub
+		final GL gl = drawable.getGL();
+		gl.glViewport(0, 0, width, height);
+	}
+	// Vertex Data
+	private void setData(String filename) {
+
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(new File(
+					filename)));
+
+			String line = reader.readLine();
+			while (line != null) {
+				StringTokenizer tok = new StringTokenizer(line, " ");
+				if (tok.hasMoreTokens()) {
+					String ident = tok.nextToken();
+					if (ident.equals("v")) {
+						Data data = new Data();
+						data.setData(Double.valueOf(tok.nextToken()) - 25,
+								Double.valueOf(tok.nextToken()),
+								Double.valueOf(tok.nextToken()));
+						vertex.add(data);
+
+					} else if (ident.equals("vn")) {
+						NormalVector nv = new NormalVector();
+						nv.setData(Double.valueOf(tok.nextToken()) - 25,
+								Double.valueOf(tok.nextToken()),
+								Double.valueOf(tok.nextToken()));
+						vector.add(nv);
+
+					} else if (ident.equals("f")) {
+						MeshFace f = new MeshFace();
+						String[] tmpStr = tok.nextToken().toString().split("/");
+						f.v1[0] = Integer.valueOf(tmpStr[0]);
+						f.v1[1] = Integer.valueOf(tmpStr[1]);
+						f.v1[2] = Integer.valueOf(tmpStr[2]);
+
+						tmpStr = tok.nextToken().toString().split("/");
+						f.v2[0] = Integer.valueOf(tmpStr[0]);
+						f.v2[1] = Integer.valueOf(tmpStr[1]);
+						f.v2[2] = Integer.valueOf(tmpStr[2]);
+
+						tmpStr = tok.nextToken().toString().split("/");
+						f.v3[0] = Integer.valueOf(tmpStr[0]);
+						f.v3[1] = Integer.valueOf(tmpStr[1]);
+						f.v3[2] = Integer.valueOf(tmpStr[2]);
+
+						faces.add(f);
+					}
+				}
+				line = reader.readLine();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	
+	@Override
+	public void mouseDragged(MouseEvent e) {
+		// TODO Auto-generated method stub
+		if (isDragging) {
+			moveX = e.getX() - oldX;
+		}
+	}
+
+	@Override
+	public void mouseMoved(MouseEvent e) {
+		// TODO Auto-generated method stub
+		// System.out.println(" -- " + e.getX());
+
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		// TODO Auto-generated method stub
+		oldX = e.getX();
+		if (isDragging == false) {
+			isDragging = true;
+		}
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		// TODO Auto-generated method stub
+		if (isDragging == true) {
+			isDragging = false;
+		}
+		moveX = 0;
+	}
+	
+	
+	int[] ab;
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		boolean flag = false;
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		int index=0;	
+		ab= new int[16];
+		
+		while(true){
+			int color_index = 0;
+			for(int i = 0; i < 16; i++){
+				if(i == 14|| i == 15){
+					ab[i] = 0;
+				}else{
+					ab[i] = JOGL_Topo.Color_data[color_index];
+//					System.out.print(ab[i] + " ");
+					color_index++;
+				}
+			}
+//			System.out.println("");
+			
+			float aa[];
+			try {
+				Thread.sleep(500);
+					for(int i = 0; i<16; i++)
+					{
+						int a= ab[i];
+						
+						switch (a) {
+						case 27:
+						case 26:
+						case 25:
+						case 24:
+						case 23:
+						case 22:
+						case 21:
+						case 20:
+						case 19:
+						case 18:
+						case 17:
+						case 16:
+						case 15:
+						case 14:
+						case 13:
+						case 12:
+						case 11:
+						case 10:
+							aa= RED;						
+							break;
+						case 9:
+							aa= Orange;						
+							break;
+						case 8:
+							aa= Orange;						
+							break;
+						case 7:
+							aa= Yellow;						
+							break;
+						case 6:
+							aa= GREEN;						
+							break;
+						case 5:
+							aa= BLUE;						
+							break;
+						case 4:
+							aa=Indigo;						
+							break;
+						case 3:
+							aa= Indigo;						
+							break;
+						case 2:
+							aa= Purple;						
+							break;
+						case 1:
+							aa= BLACK;						
+							break;
+						default:
+							aa=BLACK;
+							break;
+						}
+					
+					color_V[i].setColorvalues(aa[0], aa[1],aa[2]);
+					}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+}
+	
+	

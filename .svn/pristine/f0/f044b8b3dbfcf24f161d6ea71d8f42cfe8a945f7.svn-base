@@ -1,0 +1,296 @@
+package windowbuilder;
+
+import java.awt.*;
+import java.awt.event.*;
+
+import javax.media.opengl.*;
+import javax.swing.*;
+
+import chart.*;
+
+import jogl_topo.*;
+
+public class WB_Sub_Topo_Pearson {
+
+	private JFrame frame;
+	private Thread_Pearson thread_pearson;
+	
+	JOGL_Topo_Up canvas_pearson;
+	
+	public WB_Sub_Topo_Pearson() {
+		initialize();
+		
+		thread_pearson = new Thread_Pearson();
+		thread_pearson.setDaemon(true);
+		thread_pearson.start();
+	}
+
+	private void initialize() {
+		frame = new JFrame();
+		frame.setBounds(200, 200, 710, 700);
+		frame.getContentPane().setLayout(null);
+		frame.setVisible(true);
+		frame.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e){
+				thread_pearson.stop();
+				frame.dispose();
+			}
+		});
+		
+		GLCapabilities cap_pearson = JOGL_Topo_Up.createGLCapabilities2();
+		canvas_pearson = new JOGL_Topo_Up(cap_pearson, 400, 300);
+		
+		JPanel panel = new JPanel();
+		panel.setBounds(12, 68, 670, 584);
+		panel.setLayout(new BorderLayout(0, 0));
+		panel.add(canvas_pearson);
+		frame.getContentPane().add(panel);	
+		
+		JCheckBox chckbxChannel_1 = new JCheckBox(" channel 1");
+		chckbxChannel_1.setBounds(12, 14, 93, 23);
+		chckbxChannel_1.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e){
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					JOGL_Topo_Up.active.channel1 = true;
+				}else{
+					JOGL_Topo_Up.active.channel1 = false;
+				}
+			}
+		});
+		frame.getContentPane().add(chckbxChannel_1);
+		
+		JCheckBox chckbxChannel_2 = new JCheckBox(" channel 2");
+		chckbxChannel_2.setBounds(109, 14, 93, 23);
+		chckbxChannel_2.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e){
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					JOGL_Topo_Up.active.channel2 = true;
+				}else{
+					JOGL_Topo_Up.active.channel2 = false;
+				}
+			}
+		});
+		frame.getContentPane().add(chckbxChannel_2);
+		
+		JCheckBox chckbxChannel_3 = new JCheckBox(" channel 3");
+		chckbxChannel_3.setBounds(206, 14, 93, 23);
+		chckbxChannel_3.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e){
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					JOGL_Topo_Up.active.channel3 = true;
+				}else{
+					JOGL_Topo_Up.active.channel3 = false;
+				}
+			}
+		});
+		frame.getContentPane().add(chckbxChannel_3);
+		
+		JCheckBox chckbxChannel_4 = new JCheckBox(" channel 4");
+		chckbxChannel_4.setBounds(303, 14, 93, 23);
+		chckbxChannel_4.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e){
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					JOGL_Topo_Up.active.channel4 = true;
+				}else{
+					JOGL_Topo_Up.active.channel4 = false;
+				}
+			}
+		});
+		frame.getContentPane().add(chckbxChannel_4);
+		
+		JCheckBox chckbxChannel_5 = new JCheckBox(" channel 5");
+		chckbxChannel_5.setBounds(400, 14, 93, 23);
+		chckbxChannel_5.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e){
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					JOGL_Topo_Up.active.channel5 = true;
+				}else{
+					JOGL_Topo_Up.active.channel5 = false;
+				}
+			}
+		});
+		frame.getContentPane().add(chckbxChannel_5);
+		
+		JCheckBox chckbxChannel_6 = new JCheckBox(" channel 6");
+		chckbxChannel_6.setBounds(497, 14, 93, 23);
+		chckbxChannel_6.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e){
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					JOGL_Topo_Up.active.channel6 = true;
+				}else{
+					JOGL_Topo_Up.active.channel6 = false;
+				}
+			}
+		});
+		frame.getContentPane().add(chckbxChannel_6);
+		
+		JCheckBox chckbxChannel_7 = new JCheckBox(" channel 7");
+		chckbxChannel_7.setBounds(594, 14, 93, 23);
+		chckbxChannel_7.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e){
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					JOGL_Topo_Up.active.channel7 = true;
+				}else{
+					JOGL_Topo_Up.active.channel7 = false;
+				}
+			}
+		});
+		frame.getContentPane().add(chckbxChannel_7);
+		
+		JCheckBox chckbxChannel_8 = new JCheckBox(" channel 8");
+		chckbxChannel_8.setBounds(12, 39, 93, 23);
+		chckbxChannel_8.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e){
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					JOGL_Topo_Up.active.channel8 = true;
+				}else{
+					JOGL_Topo_Up.active.channel8 = false;
+				}
+			}
+		});
+		frame.getContentPane().add(chckbxChannel_8);
+		
+		JCheckBox chckbxChannel_9 = new JCheckBox(" channel 9");
+		chckbxChannel_9.setBounds(109, 39, 93, 23);
+		chckbxChannel_9.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e){
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					JOGL_Topo_Up.active.channel9 = true;
+				}else{
+					JOGL_Topo_Up.active.channel9 = false;
+				}
+			}
+		});
+		frame.getContentPane().add(chckbxChannel_9);
+		
+		JCheckBox chckbxChannel_10 = new JCheckBox(" channel 10");
+		chckbxChannel_10.setBounds(206, 39, 93, 23);
+		chckbxChannel_10.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e){
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					JOGL_Topo_Up.active.channel10 = true;
+				}else{
+					JOGL_Topo_Up.active.channel10 = false;
+				}
+			}
+		});
+		frame.getContentPane().add(chckbxChannel_10);
+		
+		JCheckBox chckbxChannel_11 = new JCheckBox(" channel 11");
+		chckbxChannel_11.setBounds(303, 39, 93, 23);
+		chckbxChannel_11.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e){
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					JOGL_Topo_Up.active.channel11 = true;
+				}else{
+					JOGL_Topo_Up.active.channel11 = false;
+				}
+			}
+		});
+		frame.getContentPane().add(chckbxChannel_11);
+		
+		JCheckBox chckbxChannel_12 = new JCheckBox(" channel 12");
+		chckbxChannel_12.setBounds(400, 39, 93, 23);
+		chckbxChannel_12.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e){
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					JOGL_Topo_Up.active.channel12 = true;
+				}else{
+					JOGL_Topo_Up.active.channel12 = false;
+				}
+			}
+		});
+		frame.getContentPane().add(chckbxChannel_12);
+		
+		JCheckBox chckbxChannel_13 = new JCheckBox(" channel 13");
+		chckbxChannel_13.setBounds(497, 39, 93, 23);
+		chckbxChannel_13.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e){
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					JOGL_Topo_Up.active.channel13 = true;
+				}else{
+					JOGL_Topo_Up.active.channel13 = false;
+				}
+			}
+		});
+		frame.getContentPane().add(chckbxChannel_13);
+		
+		JCheckBox chckbxChannel_14 = new JCheckBox(" channel 14");
+		chckbxChannel_14.setBounds(594, 39, 93, 23);
+		chckbxChannel_14.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e){
+				int type = e.getStateChange();
+				if(type == ItemEvent.SELECTED){
+					JOGL_Topo_Up.active.channel14 = true;
+				}else{
+					JOGL_Topo_Up.active.channel14 = false;
+				}
+			}
+		});
+		frame.getContentPane().add(chckbxChannel_14);
+	}
+}
+
+class Thread_Pearson extends Thread{
+	double [][]channel = new double[14][14];
+	int [][]channel_order = new int[14][14];
+	
+	double []value = new double[14];
+
+	public void run(){
+		while(true){
+			try{
+				Thread.sleep(1000);
+				if(AllChannel.Pearson != null){
+					System.out.println("Thread running....");
+					value = AllChannel.Pearson;
+					
+					for(int i = 0; i < value.length; i++){
+						double data = value[i];
+						for(int j = 0; j < value.length; j++){
+							channel[i][j] = Math.sqrt(Math.pow(data-value[j],2));
+						}
+					}
+					
+//					for(int i = 0; i < value.length; i++){
+//						double data[] = channel[i];
+//						Min_Sort(i, data, value.length);
+//					}
+					
+					JOGL_Topo_Up.Channel_order = channel;
+				}
+			}catch(InterruptedException e){
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private void Min_Sort(int order, double[] data, int num){
+		int minidx = 0;
+		int i,j;
+		
+		for(i = 0; i < num; i++){
+			for(minidx = i,j = 0; j < num; j++){
+				if(data[minidx] > data[j]){
+					minidx = j;
+				}
+			}
+			
+			channel_order[order][i] = minidx;
+			data[minidx] = 9999;
+		}
+	}// End of Min_Sort
+}

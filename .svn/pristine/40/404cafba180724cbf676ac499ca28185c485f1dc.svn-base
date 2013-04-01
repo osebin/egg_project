@@ -1,0 +1,142 @@
+package windowbuilder;
+
+import java.awt.*;
+import java.io.*;
+import java.util.*;
+
+import javax.swing.*;
+
+import fft.*;
+
+public class WB_FFT {
+
+	private JFrame frame;
+	StringTokenizer str = null;
+	JTextArea txtrDataarea;
+	JTextArea textArea;
+	JTextArea textArea_1;
+	
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					WB_FFT window = new WB_FFT();
+					window.frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	public WB_FFT() {
+		initialize();
+		dataset();
+		FFT mFFT = new FFT();
+     	StringBuilder sbuilder = new StringBuilder();
+     	int N = 128;
+        Complex[] x = new Complex[N];
+
+        // original data
+        for (int i = 0; i < N; i++) {
+            x[i] = new Complex(i, 0);
+            x[i] = new Complex(Double.valueOf(str.nextToken()), 0);
+        }
+        for (int i = 0; i < x.length; i++){
+        	String str = (i+1) + " : " + x[i];
+        	sbuilder.append(str + "\n");
+        }
+        txtrDataarea.setText(sbuilder.toString());
+        
+        // FFT of original data
+        Complex[] y = mFFT.fft(x);
+        ArrayList<Double> list_value = new ArrayList<Double>(mFFT.Calculator(y));
+        									// 주파수별 파워 스펙트럼 크기//
+        
+        StringBuilder sbuilder2 = new StringBuilder();
+        for (int i = 0; i < list_value.size(); i++){
+        	String str = (i+1) + " : " + list_value.get(i);
+        	sbuilder2.append(str + "\n");
+        }
+        textArea.setText(sbuilder2.toString());
+        
+        
+        System.out.println("Calcaulator ----------->");
+        int index = 0;
+        while(index < list_value.size()){
+        	System.out.println(index+1 + " : " +list_value.get(index++));
+        }
+        
+        ArrayList<Double> power_list = new ArrayList<Double>();
+        double temp_sum = 0;
+        int count = 0;
+        index = 1;
+        while(index < list_value.size()){
+        	temp_sum += list_value.get(index - 1);
+        	if(index % 5 == 0){
+        		System.out.println(++count + " : " + temp_sum);
+        		power_list.add(temp_sum);
+        		temp_sum = 0;
+        	}
+        	index++;
+        }
+        
+        StringBuilder sb3 = new StringBuilder();
+        for (int i = 0; i < power_list.size(); i++){
+        	String str = (i+1) + " : " + power_list.get(i);
+        	sb3.append(str + "\n");
+        }
+        textArea_1.setText(sb3.toString());
+	}
+
+	private void initialize() {
+		frame = new JFrame();
+		frame.setBounds(100, 100, 1000, 743);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.getContentPane().setLayout(null);
+		
+		JScrollPane scrollPane = new JScrollPane();
+        scrollPane.setBounds(12, 10, 184, 685);
+        frame.getContentPane().add(scrollPane);
+        
+        txtrDataarea = new JTextArea();
+        scrollPane.setViewportView(txtrDataarea);
+        txtrDataarea.setEditable(false);
+        txtrDataarea.setText("Sample Data");
+        
+        JScrollPane scrollPane_1 = new JScrollPane();
+        scrollPane_1.setBounds(208, 10, 184, 685);
+        frame.getContentPane().add(scrollPane_1);
+        
+        textArea = new JTextArea();
+        scrollPane_1.setViewportView(textArea);
+        
+        JScrollPane scrollPane_2 = new JScrollPane();
+        scrollPane_2.setBounds(404, 10, 184, 685);
+        frame.getContentPane().add(scrollPane_2);
+        
+        textArea_1 = new JTextArea();
+        scrollPane_2.setViewportView(textArea_1);
+	}
+	
+	private void dataset(){
+		try{
+    		File file = new File("data.txt");
+			String data = "";
+
+    		if(file.exists()){
+    			BufferedReader inFile = new BufferedReader(new FileReader(file));
+    			String line = null;
+    			while((line = inFile.readLine()) != null){
+    				if(line != null){
+    					data = line;
+    					System.out.println("Data input Complete");
+    				}
+    			}
+    		}
+    		str = new StringTokenizer(data, "\t");
+    	}catch(Exception e){
+    		e.printStackTrace();
+    	}
+	}
+}
